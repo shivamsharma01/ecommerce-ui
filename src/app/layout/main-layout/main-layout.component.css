@@ -1,0 +1,25 @@
+.layout {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.brand {
+  font-weight: 600;
+  font-size: 1.25rem;
+}
+
+.spacer {
+  flex: 1;
+}
+
+.content {
+  flex: 1;
+  padding: 1.5rem;
+}

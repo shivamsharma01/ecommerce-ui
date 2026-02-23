@@ -1,0 +1,173 @@
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable, tap } from 'rxjs';
+
+interface LoginResponse {
+  accessToken: string;
+  expiresIn: number;
+}
+
+@Injectable({ providedIn: 'root' })
+export class AuthService {
+  private accessToken: string | null = null;
+
+  constructor(private http: HttpClient) {}
+
+  login(email: string, password: string): Observable<LoginResponse> {
+    return this.http
+      .post<LoginResponse>('/auth/login', { email, password }, {
+        withCredentials: true // IMPORTANT for refresh cookie
+      })
+      .pipe(
+        tap(res => this.setAccessToken(res.accessToken))
+      );
+  }
+
+  refresh(): Observable<LoginResponse> {
+    return this.http
+      .post<LoginResponse>('/auth/refresh', {}, {
+        withCredentials: true // sends HttpOnly refresh cookie
+      })
+      .pipe(
+        tap(res => this.setAccessToken(res.accessToken))
+      );
+  }
+
+  logout(): void {
+    this.accessToken = null;
+    // optionally call /auth/logout to revoke refresh token
+  }
+
+  getAccessToken(): string | null {
+    return this.accessToken;
+  }
+
+  setAccessToken(token: string): void {
+    this.accessToken = token;
+  }
+
+  clearAccessToken(): void {
+    this.accessToken = null;
+  }
+}
+
+
+
+=====================
+
+
+import { Injectable } from '@angular/core';
+import {
+  HttpEvent,
+  HttpHandler,
+  HttpInterceptor,
+  HttpRequest,
+  HttpErrorResponse
+} from '@angular/common/http';
+import { BehaviorSubject, Observable, throwError } from 'rxjs';
+import {
+  catchError,
+  filter,
+  switchMap,
+  take
+} from 'rxjs/operators';
+import { AuthService } from './auth.service';
+
+@Injectable()
+export class AuthInterceptor implements HttpInterceptor {
+
+  private isRefreshing = false;
+  private refreshTokenSubject = new BehaviorSubject<string | null>(null);
+
+  constructor(private authService: AuthService) {}
+
+  intercept(
+    req: HttpRequest<any>,
+    next: HttpHandler
+  ): Observable<HttpEvent<any>> {
+
+    const accessToken = this.authService.getAccessToken();
+
+    const authReq = accessToken
+      ? this.addToken(req, accessToken)
+      : req;
+
+    return next.handle(authReq).pipe(
+      catchError(error => {
+        if (
+          error instanceof HttpErrorResponse &&
+          error.status === 401 &&
+          !this.isRefreshRequest(req)
+        ) {
+          return this.handle401Error(authReq, next);
+        }
+        return throwError(() => error);
+      })
+    );
+  }
+
+  private handle401Error(
+    request: HttpRequest<any>,
+    next: HttpHandler
+  ): Observable<HttpEvent<any>> {
+
+    if (!this.isRefreshing) {
+      this.isRefreshing = true;
+      this.refreshTokenSubject.next(null);
+
+      return this.authService.refresh().pipe(
+        switchMap(response => {
+          const newToken = response.accessToken;
+          this.isRefreshing = false;
+          this.refreshTokenSubject.next(newToken);
+          return next.handle(this.addToken(request, newToken));
+        }),
+        catchError(err => {
+          this.isRefreshing = false;
+          this.authService.logout();
+          return throwError(() => err);
+        })
+      );
+    }
+
+    // Wait for refresh to complete
+    return this.refreshTokenSubject.pipe(
+      filter(token => token !== null),
+      take(1),
+      switchMap(token =>
+        next.handle(this.addToken(request, token!))
+      )
+    );
+  }
+
+  private addToken(
+    request: HttpRequest<any>,
+    token: string
+  ): HttpRequest<any> {
+    return request.clone({
+      setHeaders: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+  }
+
+  private isRefreshRequest(request: HttpRequest<any>): boolean {
+    return request.url.includes('/auth/refresh');
+  }
+}
+
+
+
+import { HTTP_INTERCEPTORS } from '@angular/common/http';
+import { AuthInterceptor } from './auth.interceptor';
+
+@NgModule({
+  providers: [
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: AuthInterceptor,
+      multi: true
+    }
+  ]
+})
+export class AppModule {}

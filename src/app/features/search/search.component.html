@@ -1,0 +1,34 @@
+<div class="search-page">
+  <h1>Search Products</h1>
+  <mat-form-field appearance="outline" class="search-field">
+    <mat-label>Search</mat-label>
+    <input
+      matInput
+      [(ngModel)]="searchQuery"
+      (keyup.enter)="onSearch()"
+      placeholder="Search for products..."
+    />
+    <button mat-icon-button matSuffix (click)="onSearch()" aria-label="Search">
+      <mat-icon>search</mat-icon>
+    </button>
+  </mat-form-field>
+  <div class="results-section">
+    @if (searchResults.length > 0) {
+      <div class="results-grid">
+        <!-- Product cards will be rendered here -->
+      </div>
+    } @else if (searchQuery) {
+      <mat-card class="empty-state">
+        <mat-card-content>
+          <p>No results found. Try a different search term.</p>
+        </mat-card-content>
+      </mat-card>
+    } @else {
+      <mat-card class="empty-state">
+        <mat-card-content>
+          <p>Enter a search term to find products.</p>
+        </mat-card-content>
+      </mat-card>
+    }
+  </div>
+</div>

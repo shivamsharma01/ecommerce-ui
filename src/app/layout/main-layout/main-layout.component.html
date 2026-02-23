@@ -1,0 +1,16 @@
+<div class="layout">
+  <mat-toolbar color="primary" class="toolbar">
+    <a mat-button routerLink="/catalog" class="brand">MCart</a>
+    <span class="spacer"></span>
+    <a mat-button routerLink="/catalog" routerLinkActive="active">Catalog</a>
+    <a mat-button routerLink="/search" routerLinkActive="active">Search</a>
+    @if (auth.isAuthenticated()) {
+      <button mat-button (click)="logout()">Logout</button>
+    } @else {
+      <a mat-button routerLink="/login" routerLinkActive="active">Login</a>
+    }
+  </mat-toolbar>
+  <main class="content">
+    <router-outlet />
+  </main>
+</div>

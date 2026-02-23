@@ -1,0 +1,24 @@
+.search-page {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.search-page h1 {
+  margin-bottom: 1.5rem;
+  font-size: 1.75rem;
+}
+
+.search-field {
+  width: 100%;
+  max-width: 500px;
+  margin-bottom: 2rem;
+}
+
+.results-section {
+  min-height: 200px;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 2rem;
+}
