@@ -1,0 +1,17 @@
+node_modules
+dist
+.angular
+.git
+.github
+.idea
+.vscode
+coverage
+*.md
+!README.md
+npm-debug.log
+.DS_Store
+.env
+.env.*
+k8s
+to-do.txt
+**/*.spec.ts

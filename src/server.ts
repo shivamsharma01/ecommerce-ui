@@ -13,6 +13,13 @@ const app = express();
 const angularApp = new AngularNodeAppEngine();
 
 /**
+ * Lightweight health checks for Kubernetes / load balancers (must stay cheap; no SSR).
+ */
+app.get('/health', (_req, res) => {
+  res.status(200).type('application/json').send({ status: 'ok' });
+});
+
+/**
  * Example Express Rest API endpoints can be defined here.
  * Uncomment and define endpoints as necessary.
  *

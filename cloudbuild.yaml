@@ -1,0 +1,80 @@
+# Cloud Build — Docker build, push to Artifact Registry, Kubernetes rollout.
+#
+# Substitutions (set on trigger or `gcloud builds submit`):
+#   _REGION         — Artifact Registry location (e.g. us-central1)
+#   _REPO           — Artifact Registry repository id
+#   _SERVICE_NAME   — image name / Deployment name / container name (e.g. mcart-ui)
+#
+# Built-in when repo is connected: PROJECT_ID, COMMIT_SHA, SHORT_SHA, …
+# Manual run:
+#   gcloud builds submit --config=cloudbuild.yaml \
+#     --substitutions=_REGION=us-central1,_REPO=docker-apps,_SERVICE_NAME=mcart-ui,COMMIT_SHA=$(git rev-parse HEAD),_GKE_CLUSTER=my-cluster,_GKE_COMPUTE_LOCATION=us-central1-a,_GKE_LOCATION_TYPE=zone
+#
+substitutions:
+  _REGION: us-central1
+  _REPO: docker-apps
+  _SERVICE_NAME: mcart-ui
+  _CONTAINER_NAME: mcart-ui
+  _K8S_NAMESPACE: default
+  _GKE_CLUSTER: ""
+  # Zonal: us-central1-a | Regional: us-central1
+  _GKE_COMPUTE_LOCATION: us-central1-a
+  # "zone" or "region" (must match how the cluster was created)
+  _GKE_LOCATION_TYPE: zone
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+
+steps:
+  - id: docker-build
+    name: gcr.io/cloud-builders/docker
+    env:
+      - DOCKER_BUILDKIT=1
+    args:
+      - build
+      - '--progress=plain'
+      - '-t'
+      - '$_REGION-docker.pkg.dev/$PROJECT_ID/$_REPO/$_SERVICE_NAME:$COMMIT_SHA'
+      - '-t'
+      - '$_REGION-docker.pkg.dev/$PROJECT_ID/$_REPO/$_SERVICE_NAME:latest'
+      - .
+
+  # Push before kubectl (Cloud Build only pushes `images:` after all steps — do not rely on that here).
+  - id: docker-push-sha
+    name: gcr.io/cloud-builders/docker
+    args:
+      - push
+      - '$_REGION-docker.pkg.dev/$PROJECT_ID/$_REPO/$_SERVICE_NAME:$COMMIT_SHA'
+
+  - id: docker-push-latest
+    name: gcr.io/cloud-builders/docker
+    args:
+      - push
+      - '$_REGION-docker.pkg.dev/$PROJECT_ID/$_REPO/$_SERVICE_NAME:latest'
+
+  - id: kubectl-set-image
+    name: gcr.io/cloud-builders/gcloud
+    entrypoint: bash
+    args:
+      - -ceu
+      - |
+        : "${_GKE_CLUSTER:?Set _GKE_CLUSTER (GKE cluster name)}"
+        : "${COMMIT_SHA:?Set COMMIT_SHA (full commit) or connect a Git trigger}"
+
+        if [[ "$_GKE_LOCATION_TYPE" == "region" ]]; then
+          gcloud container clusters get-credentials "$_GKE_CLUSTER" \
+            --region "$_GKE_COMPUTE_LOCATION" \
+            --project "$PROJECT_ID"
+        else
+          gcloud container clusters get-credentials "$_GKE_CLUSTER" \
+            --zone "$_GKE_COMPUTE_LOCATION" \
+            --project "$PROJECT_ID"
+        fi
+
+        kubectl -n "$_K8S_NAMESPACE" set image \
+          "deployment/$_SERVICE_NAME" \
+          "$_CONTAINER_NAME=$_REGION-docker.pkg.dev/$PROJECT_ID/$_REPO/$_SERVICE_NAME:$COMMIT_SHA"
+
+        kubectl -n "$_K8S_NAMESPACE" rollout status \
+          "deployment/$_SERVICE_NAME" \
+          --timeout=5m

@@ -8,16 +8,27 @@
       (keyup.enter)="onSearch()"
       placeholder="Search for products..."
     />
-    <button mat-icon-button matSuffix (click)="onSearch()" aria-label="Search">
+    <button mat-icon-button matSuffix type="button" (click)="onSearch()" aria-label="Search">
       <mat-icon>search</mat-icon>
     </button>
   </mat-form-field>
   <div class="results-section">
-    @if (searchResults.length > 0) {
-      <div class="results-grid">
-        <!-- Product cards will be rendered here -->
+    @if (loading()) {
+      <div class="state-block" role="status" aria-live="polite">
+        <mat-spinner diameter="40" />
+        <p>Searching…</p>
       </div>
-    } @else if (searchQuery) {
+    } @else if (error(); as err) {
+      <mat-card class="empty-state">
+        <mat-card-content>{{ err }}</mat-card-content>
+      </mat-card>
+    } @else if (hasSearched() && results().length > 0) {
+      <div class="results-grid product-grid">
+        @for (product of results(); track product.id) {
+          <app-product-card [product]="product" />
+        }
+      </div>
+    } @else if (hasSearched()) {
       <mat-card class="empty-state">
         <mat-card-content>
           <p>No results found. Try a different search term.</p>

@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, tap } from 'rxjs';
+import { Observable, catchError, finalize, of, tap } from 'rxjs';
 
 export interface LoginResponse {
   accessToken: string;
@@ -28,8 +28,19 @@ export class AuthService {
       .pipe(tap((res) => this.setAccessToken(res.accessToken)));
   }
 
-  logout(): void {
-    this.accessToken = null;
+  /**
+   * Ends the server session (best-effort) and clears the in-memory access token.
+   * Subscribe to run the request; token is cleared in `finalize` whether the call succeeds or not.
+   */
+  logout(): Observable<void> {
+    return this.http
+      .post<void>('/auth/logout', {}, { withCredentials: true })
+      .pipe(
+        catchError(() => of(undefined)),
+        finalize(() => {
+          this.accessToken = null;
+        }),
+      );
   }
 
   getAccessToken(): string | null {
