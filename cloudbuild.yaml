@@ -44,10 +44,10 @@ steps:
     args:
       - -ceu
       - |
-        : "${COMMIT_SHA:?Set COMMIT_SHA (full commit) or connect a Git trigger}"
         : "$${GITHUB_TOKEN:?Set GitHub token via Secret Manager}"
 
-        VERSION="$${SHORT_SHA:-$$(printf '%s' "$COMMIT_SHA" | cut -c1-7)}"
+        RAW_SHA="$${COMMIT_SHA:-$${SHORT_SHA:-$${REVISION_ID:-$${BUILD_ID}}}}"
+        VERSION="$$(printf '%s' "$${RAW_SHA}" | cut -c1-7)"
         IMAGE_URI="$_REGION-docker.pkg.dev/$PROJECT_ID/$_REPO/$_SERVICE_NAME:$${VERSION}"
 
         git clone "https://oauth2:$${GITHUB_TOKEN}@${_CONFIG_REPO_URL}" config-repo
