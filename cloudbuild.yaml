@@ -45,30 +45,30 @@ steps:
       - -ceu
       - |
         : "${COMMIT_SHA:?Set COMMIT_SHA (full commit) or connect a Git trigger}"
-        : "${GITHUB_TOKEN:?Set GitHub token via Secret Manager}"
+        : "$${GITHUB_TOKEN:?Set GitHub token via Secret Manager}"
 
-        VERSION="${SHORT_SHA:-$(printf '%s' "$COMMIT_SHA" | cut -c1-7)}"
-        IMAGE_URI="$_REGION-docker.pkg.dev/$PROJECT_ID/$_REPO/$_SERVICE_NAME:$VERSION"
+        VERSION="$${SHORT_SHA:-$$(printf '%s' "$COMMIT_SHA" | cut -c1-7)}"
+        IMAGE_URI="$_REGION-docker.pkg.dev/$PROJECT_ID/$_REPO/$_SERVICE_NAME:$${VERSION}"
 
-        git clone "https://oauth2:${GITHUB_TOKEN}@${_CONFIG_REPO_URL}" config-repo
+        git clone "https://oauth2:$${GITHUB_TOKEN}@${_CONFIG_REPO_URL}" config-repo
         cd config-repo
         git checkout "$_CONFIG_REPO_BRANCH"
 
         test -f "$_CONFIG_FILE"
 
         sed -i -E \
-          "s|^([[:space:]]*image:[[:space:]]*).*$|\\1${IMAGE_URI}|g" \
+          "s|^([[:space:]]*image:[[:space:]]*).*$|\\1$${IMAGE_URI}|g" \
           "$_CONFIG_FILE"
 
         if git diff --quiet -- "$_CONFIG_FILE"; then
-          echo "No config changes detected in ${_CONFIG_FILE}; skipping commit."
+          echo "No config changes detected in $_CONFIG_FILE; skipping commit."
           exit 0
         fi
 
         git config user.name "cloud-build-bot"
         git config user.email "cloud-build-bot@${PROJECT_ID}.iam.gserviceaccount.com"
         git add "$_CONFIG_FILE"
-        git commit -m "chore(mcart-ui): update image to ${VERSION}"
+        git commit -m "chore(mcart-ui): update image to $${VERSION}"
         git push origin "HEAD:${_CONFIG_REPO_BRANCH}"
 
 availableSecrets:
