@@ -1,26 +1,11 @@
-# Cloud Build — Docker build, push to Artifact Registry, Kubernetes rollout.
-#
-# Substitutions (set on trigger or `gcloud builds submit`):
-#   _REGION         — Artifact Registry location (e.g. us-central1)
-#   _REPO           — Artifact Registry repository id
-#   _SERVICE_NAME   — image name / Deployment name / container name (e.g. mcart-ui)
-#
-# Built-in when repo is connected: PROJECT_ID, COMMIT_SHA, SHORT_SHA, …
-# Manual run:
-#   gcloud builds submit --config=cloudbuild.yaml \
-#     --substitutions=_REGION=us-central1,_REPO=docker-apps,_SERVICE_NAME=mcart-ui,COMMIT_SHA=$(git rev-parse HEAD),_GKE_CLUSTER=my-cluster,_GKE_COMPUTE_LOCATION=us-central1-a,_GKE_LOCATION_TYPE=zone
-#
 substitutions:
-  _REGION: us-central1
+  _REGION: asia-south2
   _REPO: docker-apps
   _SERVICE_NAME: mcart-ui
-  _CONTAINER_NAME: mcart-ui
-  _K8S_NAMESPACE: default
-  _GKE_CLUSTER: ""
-  # Zonal: us-central1-a | Regional: us-central1
-  _GKE_COMPUTE_LOCATION: us-central1-a
-  # "zone" or "region" (must match how the cluster was created)
-  _GKE_LOCATION_TYPE: zone
+  _CONFIG_REPO_URL: github.com/shivamsharma01/ecommerce-infra.git
+  _CONFIG_REPO_BRANCH: main
+  _CONFIG_FILE: deploy/k8s/apps/mcart-ui/deployment.yaml
+  _GITHUB_TOKEN_SECRET: github-token
 
 options:
   logging: CLOUD_LOGGING_ONLY
@@ -39,7 +24,6 @@ steps:
       - '$_REGION-docker.pkg.dev/$PROJECT_ID/$_REPO/$_SERVICE_NAME:latest'
       - .
 
-  # Push before kubectl (Cloud Build only pushes `images:` after all steps — do not rely on that here).
   - id: docker-push-sha
     name: gcr.io/cloud-builders/docker
     args:
@@ -52,29 +36,42 @@ steps:
       - push
       - '$_REGION-docker.pkg.dev/$PROJECT_ID/$_REPO/$_SERVICE_NAME:latest'
 
-  - id: kubectl-set-image
-    name: gcr.io/cloud-builders/gcloud
+  - id: update-config-repo
+    name: gcr.io/cloud-builders/git
     entrypoint: bash
+    secretEnv:
+      - GITHUB_TOKEN
     args:
       - -ceu
       - |
-        : "${_GKE_CLUSTER:?Set _GKE_CLUSTER (GKE cluster name)}"
         : "${COMMIT_SHA:?Set COMMIT_SHA (full commit) or connect a Git trigger}"
+        : "${GITHUB_TOKEN:?Set GitHub token via Secret Manager}"
 
-        if [[ "$_GKE_LOCATION_TYPE" == "region" ]]; then
-          gcloud container clusters get-credentials "$_GKE_CLUSTER" \
-            --region "$_GKE_COMPUTE_LOCATION" \
-            --project "$PROJECT_ID"
-        else
-          gcloud container clusters get-credentials "$_GKE_CLUSTER" \
-            --zone "$_GKE_COMPUTE_LOCATION" \
-            --project "$PROJECT_ID"
+        VERSION="${SHORT_SHA:-$(printf '%s' "$COMMIT_SHA" | cut -c1-7)}"
+        IMAGE_URI="$_REGION-docker.pkg.dev/$PROJECT_ID/$_REPO/$_SERVICE_NAME:$VERSION"
+
+        git clone "https://oauth2:${GITHUB_TOKEN}@${_CONFIG_REPO_URL}" config-repo
+        cd config-repo
+        git checkout "$_CONFIG_REPO_BRANCH"
+
+        test -f "$_CONFIG_FILE"
+
+        sed -i -E \
+          "s|^([[:space:]]*image:[[:space:]]*).*$|\\1${IMAGE_URI}|g" \
+          "$_CONFIG_FILE"
+
+        if git diff --quiet -- "$_CONFIG_FILE"; then
+          echo "No config changes detected in ${_CONFIG_FILE}; skipping commit."
+          exit 0
         fi
 
-        kubectl -n "$_K8S_NAMESPACE" set image \
-          "deployment/$_SERVICE_NAME" \
-          "$_CONTAINER_NAME=$_REGION-docker.pkg.dev/$PROJECT_ID/$_REPO/$_SERVICE_NAME:$COMMIT_SHA"
+        git config user.name "cloud-build-bot"
+        git config user.email "cloud-build-bot@${PROJECT_ID}.iam.gserviceaccount.com"
+        git add "$_CONFIG_FILE"
+        git commit -m "chore(mcart-ui): update image to ${VERSION}"
+        git push origin "HEAD:${_CONFIG_REPO_BRANCH}"
 
-        kubectl -n "$_K8S_NAMESPACE" rollout status \
-          "deployment/$_SERVICE_NAME" \
-          --timeout=5m
+availableSecrets:
+  secretManager:
+    - versionName: projects/$PROJECT_ID/secrets/${_GITHUB_TOKEN_SECRET}/versions/latest
+      env: GITHUB_TOKEN
