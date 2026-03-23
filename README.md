@@ -31,4 +31,4 @@ Build, then serve SSR; set **`PORT`** for the Node listener. Reverse-proxy `/aut
 
 ## Kubernetes
 
-Manifests: **`ecomm-infra/deploy/k8s/apps/mcart-ui/`** (`deployment.yaml`, `configmap.yaml`, `service.yaml`). Image placeholders: `<ARTIFACT_REGISTRY_URL>`, `<VERSION>`.
+Manifests: **`ecomm-infra/deploy/k8s/apps/mcart-ui/`** (`deployment.yaml`, `configmap.yaml`, `service.yaml`). Image URI is **`asia-south2-docker.pkg.dev/ecommerce-491019/docker-apps/mcart-ui:<short-sha>`** (updated by Cloud Build). See **`ecomm-infra/README.md`**.
