@@ -1,6 +1,5 @@
 .search-page {
-  max-width: 900px;
-  margin: 0 auto;
+  max-width: 1200px;
 }
 
 .search-page h1 {
@@ -10,12 +9,28 @@
 
 .search-field {
   width: 100%;
-  max-width: 500px;
-  margin-bottom: 2rem;
+}
+
+.filters-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  margin-bottom: 1rem;
+}
+
+.filter-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
 }
 
 .results-section {
   min-height: 200px;
+}
+
+.results-meta {
+  margin-bottom: 1rem;
 }
 
 .empty-state {
@@ -36,4 +51,11 @@
   align-items: center;
   gap: 1rem;
   padding: 2rem;
+}
+
+.pagination-controls {
+  margin-top: 1.5rem;
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
 }

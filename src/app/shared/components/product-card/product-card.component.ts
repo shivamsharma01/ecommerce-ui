@@ -14,4 +14,8 @@ import type { Product } from '../../models/product.model';
 })
 export class ProductCardComponent {
   readonly product = input.required<Product>();
+
+  protected primaryImage(): string | null {
+    return this.product().imageUrls?.[0] ?? null;
+  }
 }

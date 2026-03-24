@@ -1,9 +1,14 @@
 <mat-card class="product-card">
+  @if (primaryImage(); as image) {
+    <img mat-card-image [src]="image" [alt]="product().name" />
+  }
   <mat-card-header>
     <mat-card-title>{{ product().name }}</mat-card-title>
-    @if (product().category) {
+    @if (product().categories.length) {
       <mat-chip-set>
-        <mat-chip>{{ product().category }}</mat-chip>
+        @for (category of product().categories; track category) {
+          <mat-chip>{{ category }}</mat-chip>
+        }
       </mat-chip-set>
     }
   </mat-card-header>

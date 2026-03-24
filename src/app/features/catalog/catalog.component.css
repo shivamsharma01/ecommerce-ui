@@ -21,3 +21,14 @@
   gap: 1.5rem;
   align-items: stretch;
 }
+
+.pagination-top {
+  margin-bottom: 1rem;
+}
+
+.pagination-controls {
+  margin-top: 1.5rem;
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+}

@@ -1,18 +1,58 @@
 <div class="search-page">
-  <h1>Search Products</h1>
-  <mat-form-field appearance="outline" class="search-field">
-    <mat-label>Search</mat-label>
-    <input
-      matInput
-      [(ngModel)]="searchQuery"
-      (keyup.enter)="onSearch()"
-      placeholder="Search for products..."
-    />
-    <button mat-icon-button matSuffix type="button" (click)="onSearch()" aria-label="Search">
-      <mat-icon>search</mat-icon>
-    </button>
-  </mat-form-field>
+  <h1>Filter Products</h1>
+
+  <div class="filters-grid">
+    <mat-form-field appearance="outline" class="search-field">
+      <mat-label>Search term</mat-label>
+      <input
+        matInput
+        [(ngModel)]="searchQuery"
+        (keyup.enter)="onSearch()"
+        placeholder="e.g. kurta, denim"
+      />
+      <button mat-icon-button matSuffix type="button" (click)="onSearch()" aria-label="Search">
+        <mat-icon>search</mat-icon>
+      </button>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Categories (comma-separated)</mat-label>
+      <input matInput [(ngModel)]="categoryInput" placeholder="Women, Western Wear" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Brands (comma-separated)</mat-label>
+      <input matInput [(ngModel)]="brandInput" placeholder="MCart Basics, MCart Trend" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Min price</mat-label>
+      <input matInput type="number" [(ngModel)]="minPrice" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Max price</mat-label>
+      <input matInput type="number" [(ngModel)]="maxPrice" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Min rating</mat-label>
+      <input matInput type="number" min="0" max="5" step="0.1" [(ngModel)]="minRating" />
+    </mat-form-field>
+  </div>
+
+  <div class="filter-actions">
+    <mat-checkbox [(ngModel)]="inStockOnly">In stock only</mat-checkbox>
+    <button mat-flat-button color="primary" (click)="onSearch()">Apply Filters</button>
+    <button mat-stroked-button (click)="clearFilters()">Clear</button>
+  </div>
+
   <div class="results-section">
+    @if (hasSearched()) {
+      <p class="results-meta">
+        Showing page {{ page() + 1 }} of {{ totalPages() }} ({{ total() }} items)
+      </p>
+    }
     @if (loading()) {
       <div class="state-block" role="status" aria-live="polite">
         <mat-spinner diameter="40" />
@@ -28,16 +68,29 @@
           <app-product-card [product]="product" />
         }
       </div>
+      <div class="pagination-controls">
+        <button mat-stroked-button (click)="previousPage()" [disabled]="page() === 0">
+          Previous
+        </button>
+        <button
+          mat-flat-button
+          color="primary"
+          (click)="nextPage()"
+          [disabled]="page() + 1 >= totalPages()"
+        >
+          Next
+        </button>
+      </div>
     } @else if (hasSearched()) {
       <mat-card class="empty-state">
         <mat-card-content>
-          <p>No results found. Try a different search term.</p>
+          <p>No results found. Try different filters.</p>
         </mat-card-content>
       </mat-card>
     } @else {
       <mat-card class="empty-state">
         <mat-card-content>
-          <p>Enter a search term to find products.</p>
+          <p>Apply filters to see matching products.</p>
         </mat-card-content>
       </mat-card>
     }

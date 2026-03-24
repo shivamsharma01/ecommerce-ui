@@ -14,10 +14,26 @@
       <mat-card-content>No products are available yet.</mat-card-content>
     </mat-card>
   } @else {
+    <div class="pagination-top">
+      <p>Showing page {{ page() + 1 }} of {{ totalPages() }} ({{ total() }} items)</p>
+    </div>
     <div class="product-grid">
       @for (product of products(); track product.id) {
         <app-product-card [product]="product" />
       }
+    </div>
+    <div class="pagination-controls">
+      <button mat-stroked-button (click)="previousPage()" [disabled]="page() === 0">
+        Previous
+      </button>
+      <button
+        mat-flat-button
+        color="primary"
+        (click)="nextPage()"
+        [disabled]="page() + 1 >= totalPages()"
+      >
+        Next
+      </button>
     </div>
   }
 </div>
