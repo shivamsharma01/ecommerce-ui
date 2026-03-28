@@ -1,6 +1,6 @@
 # MCart UI
 
-Angular storefront with **SSR** (Express), Material, and zoneless change detection. In dev, API calls are proxied to a backend (default port **3000**).
+Angular storefront with **SSR** (Express), Material, and zoneless change detection. In dev, `proxy.conf.json` sends **`/api/search`** to the search service (default **8083**), other **`/api`** routes to product (**8084**), and **`/auth`** to auth (**8081**). Order matters: search is matched before the generic `/api` rule.
 
 ## Requirements
 
@@ -19,11 +19,11 @@ Angular storefront with **SSR** (Express), Material, and zoneless change detecti
 
 ## Local development
 
-1. Start your API where `proxy.conf.json` points (default `http://localhost:3000`).
+1. Start auth (**8081**), search (**8083**), and product (**8084**), or edit `proxy.conf.json` to match your ports.
 2. `npm start`
 3. Open `http://localhost:4200`
 
-Proxied paths include `/auth` and `/api` (adjust `proxy.conf.json` if your backend differs).
+Proxied paths: `/api/search` → search; `/auth` → auth; `/api` (everything else) → product.
 
 ## Production
 
