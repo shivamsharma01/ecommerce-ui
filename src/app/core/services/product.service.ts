@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import type {
+  Product,
   ProductPageResponse,
   SearchRequest,
   SearchResponse,
@@ -15,6 +16,10 @@ export class ProductService {
     return this.http.get<ProductPageResponse>('/api/products', {
       params: { page, size },
     });
+  }
+
+  getById(productId: string): Observable<Product> {
+    return this.http.get<Product>(`/api/products/${productId}`);
   }
 
   search(request: SearchRequest): Observable<SearchResponse> {

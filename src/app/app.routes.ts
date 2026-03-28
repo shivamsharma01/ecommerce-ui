@@ -25,6 +25,13 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/search/search.component').then((m) => m.SearchComponent),
       },
+      {
+        path: 'products/:id',
+        loadComponent: () =>
+          import('./features/product-detail/product-detail.component').then(
+            (m) => m.ProductDetailComponent,
+          ),
+      },
     ],
   },
   { path: '**', redirectTo: 'catalog' },

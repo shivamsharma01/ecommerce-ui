@@ -1,11 +1,19 @@
+export interface ProductGalleryImage {
+  thumbnailUrl: string;
+  hdUrl: string;
+  alt?: string;
+}
+
 export interface Product {
   id: string;
   name: string;
   price: number;
   description: string;
+  sku?: string;
+  stockQuantity?: number;
   categories: string[];
   brand?: string;
-  imageUrls: string[];
+  gallery: ProductGalleryImage[];
   rating?: number;
   inStock?: boolean;
   attributes?: Record<string, unknown>;
