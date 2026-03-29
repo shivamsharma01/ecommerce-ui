@@ -1,0 +1,44 @@
+.signup-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 60vh;
+}
+
+.signup-card {
+  max-width: 440px;
+  width: 100%;
+}
+
+.signup-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.submit-btn {
+  margin-top: 0.5rem;
+}
+
+.error-message {
+  color: var(--mat-error-default);
+  font-size: 0.875rem;
+}
+
+.success-message {
+  color: var(--mat-primary-default, #1565c0);
+  font-size: 0.875rem;
+}
+
+.footer-link {
+  margin-top: 1rem;
+  font-size: 0.875rem;
+}
+
+.footer-link a {
+  margin-left: 0.25rem;
+}
