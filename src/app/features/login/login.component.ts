@@ -1,5 +1,6 @@
-import { Component, inject } from '@angular/core';
-import { Router } from '@angular/router';
+import { ChangeDetectorRef, Component, inject } from '@angular/core';
+import { Router, RouterLink } from '@angular/router';
+import { finalize } from 'rxjs';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -12,6 +13,7 @@ import { AuthService } from '../../core/auth';
   standalone: true,
   imports: [
     ReactiveFormsModule,
+    RouterLink,
     MatCardModule,
     MatFormFieldModule,
     MatInputModule,
@@ -24,6 +26,7 @@ export class LoginComponent {
   private readonly fb = inject(FormBuilder);
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly cdr = inject(ChangeDetectorRef);
 
   protected errorMessage = '';
   protected isLoading = false;
@@ -41,18 +44,28 @@ export class LoginComponent {
 
     const { email, password } = this.form.getRawValue();
 
-    this.auth.login(email, password).subscribe({
-      next: () => {
-        this.router.navigate(['/catalog']);
-      },
-      error: (err) => {
-        this.isLoading = false;
-        this.errorMessage =
-          err?.error?.message ?? 'Login failed. Please check your credentials.';
-      },
-      complete: () => {
-        this.isLoading = false;
-      },
-    });
+    this.auth
+      .login(email, password)
+      .pipe(
+        finalize(() => {
+          this.isLoading = false;
+          this.cdr.markForCheck();
+        }),
+      )
+      .subscribe({
+        next: () => {
+          this.router.navigate(['/catalog']);
+        },
+        error: (err) => {
+          const e = err?.error;
+          if (typeof e === 'string' && e.length > 0) {
+            this.errorMessage = e;
+          } else if (e?.message) {
+            this.errorMessage = e.message;
+          } else {
+            this.errorMessage = 'Login failed. Please check your credentials.';
+          }
+        },
+      });
   }
 }

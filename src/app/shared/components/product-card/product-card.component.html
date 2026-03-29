@@ -1,22 +1,54 @@
-<mat-card class="product-card">
-  @if (primaryImage(); as image) {
-    <img mat-card-image [src]="image" [alt]="product().name" />
-  }
-  <mat-card-header>
-    <mat-card-title>{{ product().name }}</mat-card-title>
-    @if (product().categories.length) {
-      <mat-chip-set>
-        @for (category of product().categories; track category) {
-          <mat-chip>{{ category }}</mat-chip>
+<a
+  [routerLink]="['/products', product().id]"
+  class="product-card-hit"
+  [attr.aria-label]="'View ' + product().name"
+>
+  <mat-card appearance="outlined" class="product-card">
+    <div class="product-card-media">
+      @if (primaryImage(); as image) {
+        <img [src]="image" [alt]="product().name" loading="lazy" />
+      } @else {
+        <div class="product-card-placeholder">
+          <span>No image</span>
+        </div>
+      }
+      @if (product().inStock === false) {
+        <span class="badge badge-out">Out of stock</span>
+      } @else {
+        <span class="badge badge-in">In stock</span>
+      }
+    </div>
+    <mat-card-header class="product-card-header">
+      <mat-card-title class="product-title">{{ product().name }}</mat-card-title>
+      @if (product().brand) {
+        <mat-card-subtitle class="product-brand">{{ product().brand }}</mat-card-subtitle>
+      }
+    </mat-card-header>
+    <mat-card-content class="product-card-body">
+      @if (product().categories.length) {
+        <mat-chip-set class="category-chips" aria-hidden="true">
+          @for (category of product().categories.slice(0, 2); track category) {
+            <mat-chip disabled class="tiny-chip">{{ category }}</mat-chip>
+          }
+          @if (product().categories.length > 2) {
+            <mat-chip disabled class="tiny-chip">+{{ product().categories.length - 2 }}</mat-chip>
+          }
+        </mat-chip-set>
+      }
+      <p class="desc">{{ product().description }}</p>
+      <div class="card-footer-row">
+        <span class="price">{{ product().price | currency: 'INR' : 'symbol' : '1.0-0' }}</span>
+        @if (product().rating != null) {
+          <span class="rating-pill" aria-label="Rating {{ product().rating }} out of 5">
+            <span class="star">★</span>
+            {{ product().rating | number: '1.1-1' }}
+          </span>
         }
-      </mat-chip-set>
-    }
-  </mat-card-header>
-  <mat-card-content>
-    <p>{{ product().description }}</p>
-    <p class="price">{{ product().price | currency }}</p>
-  </mat-card-content>
-  <mat-card-actions>
-    <a mat-button color="primary" [routerLink]="['/products', product().id]">View Details</a>
-  </mat-card-actions>
-</mat-card>
+      </div>
+    </mat-card-content>
+    <mat-card-footer class="product-card-cta">
+      <span class="view-hint">View product</span>
+      <span class="chevron" aria-hidden="true">→</span>
+    </mat-card-footer>
+  </mat-card>
+</a>

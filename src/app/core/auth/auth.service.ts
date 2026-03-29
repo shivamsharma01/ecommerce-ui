@@ -7,6 +7,19 @@ export interface LoginResponse {
   expiresIn: number;
 }
 
+/** Mirrors auth service {@code PasswordSignupRequest} — these fields seed auth_identity / auth_user and the user_profile row (via signup event). */
+export interface SignupRequest {
+  email: string;
+  password: string;
+  firstName: string;
+  lastName: string;
+}
+
+export interface SignupResponse {
+  userId: string;
+  message: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly http = inject(HttpClient);
@@ -16,10 +29,14 @@ export class AuthService {
     return this.http
       .post<LoginResponse>(
         '/auth/login',
-        { email, password },
-        { withCredentials: true }
+        { identifier: email.trim(), password },
+        { withCredentials: true },
       )
       .pipe(tap((res) => this.setAccessToken(res.accessToken)));
+  }
+
+  signup(body: SignupRequest): Observable<SignupResponse> {
+    return this.http.post<SignupResponse>('/auth/signup', body);
   }
 
   refresh(): Observable<LoginResponse> {

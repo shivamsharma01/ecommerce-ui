@@ -5,6 +5,11 @@
     "secure": false
   },
   {
+    "context": ["/user"],
+    "target": "http://localhost:8082",
+    "secure": false
+  },
+  {
     "context": ["/auth"],
     "target": "http://localhost:8081",
     "secure": false

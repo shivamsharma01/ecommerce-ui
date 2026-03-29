@@ -32,7 +32,7 @@ describe('AuthService', () => {
 
     const req = httpMock.expectOne('/auth/login');
     expect(req.request.method).toBe('POST');
-    expect(req.request.body).toEqual({ email: 'u@x.com', password: 'secret' });
+    expect(req.request.body).toEqual({ identifier: 'u@x.com', password: 'secret' });
     expect(req.request.withCredentials).toBeTrue();
     req.flush({ accessToken: 'abc', expiresIn: 3600 });
 
@@ -71,5 +71,26 @@ describe('AuthService', () => {
     service.setAccessToken('t');
     service.clearAccessToken();
     expect(service.isAuthenticated()).toBeFalse();
+  });
+
+  it('signup posts PasswordSignupRequest shape to /auth/signup', () => {
+    const body = {
+      email: 'n@x.com',
+      password: 'password1',
+      firstName: 'Ada',
+      lastName: 'Lovelace',
+    };
+    service.signup(body).subscribe((res) => {
+      expect(res.userId).toBe('550e8400-e29b-41d4-a716-446655440000');
+      expect(res.message).toBe('Verification email sent');
+    });
+
+    const req = httpMock.expectOne('/auth/signup');
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual(body);
+    req.flush({
+      userId: '550e8400-e29b-41d4-a716-446655440000',
+      message: 'Verification email sent',
+    });
   });
 });

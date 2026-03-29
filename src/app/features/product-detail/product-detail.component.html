@@ -1,87 +1,229 @@
-<div class="product-detail-page">
-  <a mat-button [routerLink]="['/catalog']">
-    <mat-icon>arrow_back</mat-icon>
-    Back to catalog
-  </a>
-
-  @if (loading()) {
-    <div class="state-block" role="status" aria-live="polite">
-      <mat-spinner diameter="40" />
-      <p>Loading product details…</p>
-    </div>
-  } @else if (error(); as err) {
-    <mat-card class="state-card">
-      <mat-card-content>{{ err }}</mat-card-content>
-    </mat-card>
-  } @else if (product(); as p) {
-    <div class="detail-layout">
-      <section class="gallery-column">
-        @if (activeImage(); as img) {
-          <div class="main-image-wrap">
-            <button class="nav-btn left" (click)="previousImage()" aria-label="Previous image">
-              <mat-icon>chevron_left</mat-icon>
-            </button>
-            <button class="main-image-btn" (click)="openZoom()" aria-label="Open zoom view">
-              <img class="main-image" [src]="img.thumbnailUrl" [alt]="img.alt || p.name" />
-            </button>
-            <button class="nav-btn right" (click)="nextImage()" aria-label="Next image">
-              <mat-icon>chevron_right</mat-icon>
-            </button>
-          </div>
-        } @else {
-          <mat-card class="state-card"><mat-card-content>No product images available.</mat-card-content></mat-card>
+<div class="pdp">
+  <div class="pdp-inner">
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <a routerLink="/catalog" class="crumb-link">Shop</a>
+      <span class="crumb-sep" aria-hidden="true">/</span>
+      @if (product(); as bp) {
+        @if (bp.categories[0]) {
+          <span class="crumb-muted">{{ bp.categories[0] }}</span>
+          <span class="crumb-sep" aria-hidden="true">/</span>
         }
+        <span class="crumb-current">{{ bp.name }}</span>
+      }
+    </nav>
 
-        @if (gallery().length > 1) {
-          <div class="thumb-strip">
-            @for (img of gallery(); track $index) {
-              <button
-                class="thumb-btn"
-                [class.active]="$index === activeIndex()"
-                (click)="selectImage($index)"
-                [attr.aria-label]="'Select image ' + ($index + 1)"
-              >
-                <img [src]="img.thumbnailUrl" [alt]="img.alt || ('Image ' + ($index + 1))" />
-              </button>
+    <div class="pdp-toolbar">
+      <button type="button" mat-stroked-button class="back-btn" (click)="goBack()">
+        <mat-icon>arrow_back</mat-icon>
+        Back
+      </button>
+      <a mat-button routerLink="/catalog" class="browse-link">Continue shopping</a>
+    </div>
+
+    @if (loading()) {
+      <div class="state-block" role="status" aria-live="polite">
+        <mat-spinner diameter="48" />
+        <p>Loading product…</p>
+      </div>
+    } @else if (error(); as err) {
+      <mat-card class="state-card" appearance="outlined">
+        <mat-card-content>
+          <p>{{ err }}</p>
+          <a mat-flat-button color="primary" routerLink="/catalog">Return to shop</a>
+        </mat-card-content>
+      </mat-card>
+    } @else if (product(); as p) {
+      <div class="pdp-grid">
+        <!-- Gallery -->
+        <section class="pdp-gallery" aria-label="Product images">
+          @if (activeImage(); as img) {
+            <div class="hero-frame">
+              <div class="hero-badge-row">
+                @if (p.inStock === false) {
+                  <span class="pill pill-muted">Out of stock</span>
+                } @else {
+                  <span class="pill pill-success">In stock</span>
+                }
+                @if (p.sku) {
+                  <span class="pill pill-sku">SKU {{ p.sku }}</span>
+                }
+              </div>
+              <div class="hero-image-shell">
+                <button type="button" class="hero-nav hero-nav-left" (click)="previousImage()" aria-label="Previous image">
+                  <mat-icon>chevron_left</mat-icon>
+                </button>
+                <button
+                  type="button"
+                  class="hero-image-btn"
+                  (click)="openZoom()"
+                  aria-label="Open large image"
+                >
+                  <img [src]="img.thumbnailUrl" [alt]="img.alt || p.name" />
+                </button>
+                <button type="button" class="hero-nav hero-nav-right" (click)="nextImage()" aria-label="Next image">
+                  <mat-icon>chevron_right</mat-icon>
+                </button>
+              </div>
+              <p class="zoom-hint">
+                <mat-icon inline class="zoom-hint-icon">zoom_in</mat-icon>
+                Click image to zoom
+              </p>
+            </div>
+            @if (gallery().length > 1) {
+              <div class="thumb-row">
+                @for (g of gallery(); track $index) {
+                  <button
+                    type="button"
+                    class="thumb"
+                    [class.thumb-active]="$index === activeIndex()"
+                    (click)="selectImage($index)"
+                    [attr.aria-label]="'Image ' + ($index + 1)"
+                    [attr.aria-current]="$index === activeIndex() ? 'true' : null"
+                  >
+                    <img [src]="g.thumbnailUrl" [alt]="g.alt || ('Thumbnail ' + ($index + 1))" />
+                  </button>
+                }
+              </div>
+            }
+          } @else {
+            <div class="hero-empty">
+              <mat-icon class="hero-empty-icon">hide_image</mat-icon>
+              <p>No images for this product.</p>
+            </div>
+          }
+        </section>
+
+        <!-- Buy column -->
+        <aside class="pdp-buy" aria-label="Purchase options">
+          @if (p.brand) {
+            <p class="brand-line">{{ p.brand }}</p>
+          }
+          <h1 class="product-title">{{ p.name }}</h1>
+
+          <div class="rating-row">
+            @if (p.rating != null) {
+              <div class="stars" [attr.aria-label]="'Rated ' + p.rating + ' out of 5'">
+                @for (s of [1, 2, 3, 4, 5]; track s) {
+                  <mat-icon class="star-icon" [class.star-fill]="s <= fullStars()">star</mat-icon>
+                }
+              </div>
+              <span class="rating-num">{{ p.rating | number: '1.1-1' }}</span>
+              <span class="rating-count">Customer rating</span>
+            } @else {
+              <span class="rating-muted">No ratings yet</span>
             }
           </div>
-        }
-      </section>
 
-      <section class="meta-column">
-        <h1>{{ p.name }}</h1>
-        <p class="price">{{ p.price | currency }}</p>
-        <p class="description">{{ p.description }}</p>
-        <p><strong>SKU:</strong> {{ p.sku || 'N/A' }}</p>
-        @if (p.brand) {
-          <p><strong>Brand:</strong> {{ p.brand }}</p>
-        }
-        @if (p.categories.length) {
-          <p><strong>Categories:</strong> {{ p.categories.join(' / ') }}</p>
-        }
-        @if (p.rating != null) {
-          <p><strong>Rating:</strong> {{ p.rating }}</p>
-        }
-        <p><strong>Stock:</strong> {{ p.stockQuantity ?? 'N/A' }}</p>
-      </section>
-    </div>
-  }
+          <div class="price-block">
+            <span class="price-current">{{ p.price | currency: 'INR' : 'symbol' : '1.0-0' }}</span>
+            <span class="price-note">Inclusive of applicable taxes</span>
+          </div>
 
-  @if (zoomOpen() && activeImage(); as zoomImg) {
-    <div class="zoom-backdrop" (click)="closeZoom()">
-      <div class="zoom-modal" (click)="$event.stopPropagation()">
-        <button class="zoom-close" (click)="closeZoom()" aria-label="Close zoom">
-          <mat-icon>close</mat-icon>
-        </button>
-        <button class="zoom-nav left" (click)="previousImage()" aria-label="Previous image">
-          <mat-icon>chevron_left</mat-icon>
-        </button>
-        <img class="zoom-image" [src]="zoomImg.hdUrl || zoomImg.thumbnailUrl" [alt]="zoomImg.alt || 'Zoomed image'" />
-        <button class="zoom-nav right" (click)="nextImage()" aria-label="Next image">
-          <mat-icon>chevron_right</mat-icon>
-        </button>
+          <div class="cta-row">
+            <button
+              mat-flat-button
+              color="primary"
+              class="btn-cart"
+              type="button"
+              [disabled]="p.inStock === false"
+              (click)="addToCart()"
+            >
+              <mat-icon>shopping_cart</mat-icon>
+              Add to cart
+            </button>
+            <button
+              mat-stroked-button
+              class="btn-wish"
+              type="button"
+              (click)="wishlist()"
+              matTooltip="Save for later"
+            >
+              <mat-icon>favorite_border</mat-icon>
+            </button>
+          </div>
+
+          <mat-divider class="buy-divider" />
+
+          <ul class="trust-list">
+            <li>
+              <mat-icon class="trust-icon">local_shipping</mat-icon>
+              <span>Free delivery on eligible orders</span>
+            </li>
+            <li>
+              <mat-icon class="trust-icon">assignment_return</mat-icon>
+              <span>Easy returns within 30 days</span>
+            </li>
+            <li>
+              <mat-icon class="trust-icon">verified_user</mat-icon>
+              <span>Secure checkout</span>
+            </li>
+          </ul>
+
+          @if (p.categories.length) {
+            <div class="category-block">
+              <span class="label">Categories</span>
+              <mat-chip-set>
+                @for (c of p.categories; track c) {
+                  <mat-chip>{{ c }}</mat-chip>
+                }
+              </mat-chip-set>
+            </div>
+          }
+        </aside>
       </div>
-    </div>
-  }
+
+      <!-- Below fold -->
+      <section class="pdp-details" aria-label="Product details">
+        <mat-card appearance="outlined" class="detail-card">
+          <mat-card-header>
+            <mat-card-title>About this item</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <p class="description-text">{{ p.description }}</p>
+          </mat-card-content>
+        </mat-card>
+
+        @if (p.attributes && (p.attributes | keyvalue).length) {
+          <mat-card appearance="outlined" class="detail-card">
+            <mat-card-header>
+              <mat-card-title>Specifications</mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+              <table class="spec-table">
+                <tbody>
+                  @for (kv of p.attributes | keyvalue; track kv.key) {
+                    <tr>
+                      <th scope="row">{{ kv.key }}</th>
+                      <td>{{ kv.value }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </mat-card-content>
+          </mat-card>
+        }
+      </section>
+    }
+  </div>
 </div>
 
+@if (zoomOpen() && activeImage(); as zoomImg) {
+  <div class="zoom-backdrop" (click)="closeZoom()" role="dialog" aria-modal="true" aria-label="Image zoom">
+    <div class="zoom-modal" (click)="$event.stopPropagation()">
+      <button type="button" class="zoom-close" (click)="closeZoom()" aria-label="Close">
+        <mat-icon>close</mat-icon>
+      </button>
+      <button type="button" class="zoom-nav zoom-nav-left" (click)="previousImage()" aria-label="Previous image">
+        <mat-icon>chevron_left</mat-icon>
+      </button>
+      <img
+        class="zoom-image"
+        [src]="zoomImg.hdUrl || zoomImg.thumbnailUrl"
+        [alt]="zoomImg.alt || 'Product image'"
+      />
+      <button type="button" class="zoom-nav zoom-nav-right" (click)="nextImage()" aria-label="Next image">
+        <mat-icon>chevron_right</mat-icon>
+      </button>
+    </div>
+  </div>
+}

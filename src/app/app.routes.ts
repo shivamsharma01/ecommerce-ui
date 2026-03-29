@@ -16,6 +16,12 @@ export const routes: Routes = [
         canActivate: [publicGuard],
       },
       {
+        path: 'signup',
+        loadComponent: () =>
+          import('./features/signup/signup.component').then((m) => m.SignupComponent),
+        canActivate: [publicGuard],
+      },
+      {
         path: 'catalog',
         loadComponent: () =>
           import('./features/catalog/catalog.component').then((m) => m.CatalogComponent),

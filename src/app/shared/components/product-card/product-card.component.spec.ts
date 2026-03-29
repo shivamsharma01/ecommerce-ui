@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
+import { provideRouter } from '@angular/router';
 import { ProductCardComponent } from './product-card.component';
 import type { Product } from '../../models/product.model';
 
@@ -11,13 +12,14 @@ describe('ProductCardComponent', () => {
     name: 'Test',
     price: 9.99,
     description: 'Desc',
-    category: 'Cat',
+    categories: ['Cat'],
+    gallery: [{ thumbnailUrl: 'https://example.com/t.jpg', hdUrl: 'https://example.com/h.jpg' }],
   };
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [ProductCardComponent],
-      providers: [provideZonelessChangeDetection()],
+      providers: [provideZonelessChangeDetection(), provideRouter([])],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ProductCardComponent);

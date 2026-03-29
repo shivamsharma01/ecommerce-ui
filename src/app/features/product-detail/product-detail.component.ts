@@ -1,12 +1,21 @@
+import {
+  CurrencyPipe,
+  DecimalPipe,
+  KeyValuePipe,
+  Location,
+} from '@angular/common';
 import { Component, DestroyRef, HostListener, computed, inject, signal } from '@angular/core';
-import { CommonModule, CurrencyPipe } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { finalize, of, switchMap } from 'rxjs';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
+import { MatChipsModule } from '@angular/material/chips';
+import { MatDividerModule } from '@angular/material/divider';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { ProductService } from '../../core/services/product.service';
 import type { Product, ProductGalleryImage } from '../../shared/models/product.model';
 
@@ -14,13 +23,18 @@ import type { Product, ProductGalleryImage } from '../../shared/models/product.m
   selector: 'app-product-detail',
   standalone: true,
   imports: [
-    CommonModule,
     CurrencyPipe,
+    DecimalPipe,
+    KeyValuePipe,
     RouterLink,
     MatButtonModule,
     MatCardModule,
+    MatChipsModule,
+    MatDividerModule,
     MatIconModule,
     MatProgressSpinnerModule,
+    MatSnackBarModule,
+    MatTooltipModule,
   ],
   templateUrl: './product-detail.component.html',
   styleUrl: './product-detail.component.css',
@@ -29,6 +43,8 @@ export class ProductDetailComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly productService = inject(ProductService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly location = inject(Location);
+  private readonly snackBar = inject(MatSnackBar);
 
   protected readonly product = signal<Product | null>(null);
   protected readonly loading = signal(true);
@@ -49,6 +65,12 @@ export class ProductDetailComponent {
     return images[idx];
   });
 
+  protected readonly fullStars = computed(() => {
+    const r = this.product()?.rating;
+    if (r == null) return 0;
+    return Math.min(5, Math.round(r));
+  });
+
   constructor() {
     this.route.paramMap
       .pipe(
@@ -62,6 +84,7 @@ export class ProductDetailComponent {
           this.loading.set(true);
           this.error.set(null);
           this.activeIndex.set(0);
+          this.product.set(null);
           return this.productService.getById(id).pipe(
             finalize(() => this.loading.set(false)),
           );
@@ -79,6 +102,32 @@ export class ProductDetailComponent {
           this.error.set('Unable to load product details. Please try again.');
         },
       });
+  }
+
+  protected goBack(): void {
+    if (window.history.length > 1) {
+      this.location.back();
+    }
+  }
+
+  protected addToCart(): void {
+    const p = this.product();
+    if (!p) return;
+    this.snackBar.open(`“${p.name}” added to cart (demo)`, 'Dismiss', {
+      duration: 3500,
+      horizontalPosition: 'center',
+      verticalPosition: 'bottom',
+    });
+  }
+
+  protected wishlist(): void {
+    const p = this.product();
+    if (!p) return;
+    this.snackBar.open(`“${p.name}” saved to wishlist (demo)`, 'Dismiss', {
+      duration: 3000,
+      horizontalPosition: 'center',
+      verticalPosition: 'bottom',
+    });
   }
 
   protected selectImage(index: number): void {
@@ -131,4 +180,3 @@ export class ProductDetailComponent {
     }
   }
 }
-

@@ -36,6 +36,8 @@ function shouldSkip401Refresh(req: HttpRequest<unknown>): boolean {
   return (
     path === '/auth/login' ||
     path.endsWith('/auth/login') ||
+    path === '/auth/signup' ||
+    path.endsWith('/auth/signup') ||
     path === '/auth/refresh' ||
     path.endsWith('/auth/refresh') ||
     path === '/auth/logout' ||

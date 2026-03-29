@@ -33,3 +33,12 @@
   font-size: 0.875rem;
   margin-bottom: 0.5rem;
 }
+
+.footer-link {
+  margin-top: 1rem;
+  font-size: 0.875rem;
+}
+
+.footer-link a {
+  margin-left: 0.25rem;
+}

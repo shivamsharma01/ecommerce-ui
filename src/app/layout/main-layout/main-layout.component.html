@@ -5,9 +5,23 @@
     <a mat-button routerLink="/catalog" routerLinkActive="active">Catalog</a>
     <a mat-button routerLink="/search" routerLinkActive="active">Search</a>
     @if (auth.isAuthenticated()) {
-      <button mat-button (click)="logout()">Logout</button>
+      <button mat-button [matMenuTriggerFor]="accountMenu" aria-label="Account menu">
+        <mat-icon>account_circle</mat-icon>
+        Account
+      </button>
+      <mat-menu #accountMenu="matMenu">
+        <button mat-menu-item type="button" (click)="openAccountProfile()">
+          <mat-icon>person</mat-icon>
+          Profile details
+        </button>
+        <button mat-menu-item type="button" (click)="logout()">
+          <mat-icon>logout</mat-icon>
+          Log out
+        </button>
+      </mat-menu>
     } @else {
-      <a mat-button routerLink="/login" routerLinkActive="active">Login</a>
+      <a mat-button routerLink="/login" routerLinkActive="active">Sign in</a>
+      <a mat-button routerLink="/signup" routerLinkActive="active">Sign up</a>
     }
   </mat-toolbar>
   <main class="content">
