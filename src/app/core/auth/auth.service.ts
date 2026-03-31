@@ -20,6 +20,10 @@ export interface SignupResponse {
   message: string;
 }
 
+export interface ResendVerificationRequest {
+  email: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly http = inject(HttpClient);
@@ -37,6 +41,13 @@ export class AuthService {
 
   signup(body: SignupRequest): Observable<SignupResponse> {
     return this.http.post<SignupResponse>('/auth/signup', body);
+  }
+
+  resendVerification(email: string): Observable<string> {
+    const body: ResendVerificationRequest = { email: email.trim() };
+    return this.http.post('/auth/resend-verification', body, {
+      responseType: 'text',
+    });
   }
 
   refresh(): Observable<LoginResponse> {

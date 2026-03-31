@@ -43,6 +43,9 @@ export class SignupComponent {
   protected errorMessage = '';
   protected successMessage = '';
   protected isLoading = false;
+  protected resendMessage = '';
+  protected isResending = false;
+  protected submittedEmail: string | null = null;
 
   protected form = this.fb.nonNullable.group(
     {
@@ -60,9 +63,11 @@ export class SignupComponent {
 
     this.errorMessage = '';
     this.successMessage = '';
+    this.resendMessage = '';
     this.isLoading = true;
 
     const raw = this.form.getRawValue();
+    this.submittedEmail = raw.email.trim();
     const body = {
       email: raw.email.trim(),
       password: raw.password,
@@ -95,6 +100,31 @@ export class SignupComponent {
           } else {
             this.errorMessage = 'Signup failed. Please try again.';
           }
+        },
+      });
+  }
+
+  onResendVerification(): void {
+    if (!this.submittedEmail || this.isResending) return;
+    this.resendMessage = '';
+    this.isResending = true;
+
+    this.auth
+      .resendVerification(this.submittedEmail)
+      .pipe(
+        finalize(() => {
+          this.isResending = false;
+          this.cdr.markForCheck();
+        }),
+      )
+      .subscribe({
+        next: (msg) => {
+          this.resendMessage =
+            msg || 'If the email exists, a verification link has been sent.';
+        },
+        error: () => {
+          this.resendMessage =
+            'Could not resend verification email right now. Please try again later.';
         },
       });
   }

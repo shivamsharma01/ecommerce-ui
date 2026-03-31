@@ -15,6 +15,24 @@
         @if (successMessage) {
           <div class="success-message">{{ successMessage }}</div>
         }
+        @if (successMessage) {
+          <button
+            mat-stroked-button
+            type="button"
+            (click)="onResendVerification()"
+            [disabled]="isResending || !submittedEmail"
+            class="submit-btn"
+          >
+            @if (isResending) {
+              Sending…
+            } @else {
+              Resend verification email
+            }
+          </button>
+          @if (resendMessage) {
+            <div class="success-message">{{ resendMessage }}</div>
+          }
+        }
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>First name</mat-label>
           <input matInput formControlName="firstName" autocomplete="given-name" />
