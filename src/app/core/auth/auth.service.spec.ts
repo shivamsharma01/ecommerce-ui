@@ -9,6 +9,7 @@ describe('AuthService', () => {
   let httpMock: HttpTestingController;
 
   beforeEach(() => {
+    sessionStorage.clear();
     TestBed.configureTestingModule({
       providers: [
         provideZonelessChangeDetection(),
@@ -22,6 +23,7 @@ describe('AuthService', () => {
 
   afterEach(() => {
     httpMock.verify();
+    sessionStorage.clear();
   });
 
   it('login stores access token', () => {
@@ -38,6 +40,7 @@ describe('AuthService', () => {
 
     expect(service.getAccessToken()).toBe('abc');
     expect(service.isAuthenticated()).toBeTrue();
+    expect(sessionStorage.getItem('mcart.accessToken')).toBe('abc');
   });
 
   it('refresh updates access token', () => {
@@ -71,6 +74,22 @@ describe('AuthService', () => {
     service.setAccessToken('t');
     service.clearAccessToken();
     expect(service.isAuthenticated()).toBeFalse();
+    expect(sessionStorage.getItem('mcart.accessToken')).toBeNull();
+  });
+
+  it('rehydrates token from sessionStorage for a new service instance', () => {
+    sessionStorage.setItem('mcart.accessToken', 'persisted');
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideHttpClient(),
+        provideHttpClientTesting(),
+      ],
+    });
+    const rehydrated = TestBed.inject(AuthService);
+    expect(rehydrated.getAccessToken()).toBe('persisted');
+    expect(rehydrated.isAuthenticated()).toBeTrue();
   });
 
   it('signup posts PasswordSignupRequest shape to /auth/signup', () => {

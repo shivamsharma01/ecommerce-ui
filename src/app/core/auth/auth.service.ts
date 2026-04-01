@@ -2,6 +2,50 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, catchError, finalize, of, tap } from 'rxjs';
 
+/** Persists JWT across full page reloads in the same tab; cleared when the tab is closed. */
+const ACCESS_TOKEN_STORAGE_KEY = 'mcart.accessToken';
+
+function browserSessionStorage(): Storage | null {
+  try {
+    if (typeof globalThis === 'undefined') return null;
+    const s = (globalThis as unknown as { sessionStorage?: Storage }).sessionStorage;
+    return s ?? null;
+  } catch {
+    return null;
+  }
+}
+
+function readStoredAccessToken(): string | null {
+  const s = browserSessionStorage();
+  if (!s) return null;
+  try {
+    const v = s.getItem(ACCESS_TOKEN_STORAGE_KEY);
+    return v && v.length > 0 ? v : null;
+  } catch {
+    return null;
+  }
+}
+
+function writeStoredAccessToken(token: string): void {
+  const s = browserSessionStorage();
+  if (!s) return;
+  try {
+    s.setItem(ACCESS_TOKEN_STORAGE_KEY, token);
+  } catch {
+    /* quota / private mode */
+  }
+}
+
+function removeStoredAccessToken(): void {
+  const s = browserSessionStorage();
+  if (!s) return;
+  try {
+    s.removeItem(ACCESS_TOKEN_STORAGE_KEY);
+  } catch {
+    /* ignore */
+  }
+}
+
 export interface LoginResponse {
   accessToken: string;
   expiresIn: number;
@@ -27,7 +71,7 @@ export interface ResendVerificationRequest {
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly http = inject(HttpClient);
-  private accessToken: string | null = null;
+  private accessToken: string | null = readStoredAccessToken();
 
   login(email: string, password: string): Observable<LoginResponse> {
     return this.http
@@ -66,7 +110,7 @@ export class AuthService {
       .pipe(
         catchError(() => of(undefined)),
         finalize(() => {
-          this.accessToken = null;
+          this.clearAccessToken();
         }),
       );
   }
@@ -77,10 +121,12 @@ export class AuthService {
 
   setAccessToken(token: string): void {
     this.accessToken = token;
+    writeStoredAccessToken(token);
   }
 
   clearAccessToken(): void {
     this.accessToken = null;
+    removeStoredAccessToken();
   }
 
   isAuthenticated(): boolean {
