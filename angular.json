@@ -29,6 +29,13 @@
             "outputMode": "server",
             "ssr": {
               "entry": "src/server.ts"
+            },
+            "security": {
+              "allowedHosts": [
+                "localhost",
+                "mcart.space",
+                "www.mcart.space"
+              ]
             }
           },
           "configurations": {

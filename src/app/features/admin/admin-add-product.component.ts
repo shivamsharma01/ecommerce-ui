@@ -10,6 +10,8 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { finalize } from 'rxjs';
 import { ProductService } from '../../core/services/product.service';
 
+const MAX_GALLERY = 10;
+
 @Component({
   selector: 'app-admin-add-product',
   standalone: true,
@@ -33,7 +35,7 @@ export class AdminAddProductComponent {
   private readonly destroyRef = inject(DestroyRef);
 
   protected readonly submitting = signal(false);
-  protected readonly imageFile = signal<File | null>(null);
+  protected readonly galleryFiles = signal<File[]>([]);
 
   protected readonly form = this.fb.nonNullable.group({
     name: ['', [Validators.required, Validators.maxLength(255)]],
@@ -43,20 +45,33 @@ export class AdminAddProductComponent {
     stockQuantity: [0, [Validators.required, Validators.min(0)]],
     categories: ['', Validators.required],
     brand: ['', Validators.maxLength(100)],
-    imageAlt: ['Product image', [Validators.maxLength(255)]],
   });
 
-  onFileSelected(event: Event): void {
+  onGalleryFilesSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
-    const file = input.files?.[0] ?? null;
-    this.imageFile.set(file);
+    const picked = Array.from(input.files ?? []);
+    if (picked.length > MAX_GALLERY) {
+      this.snackBar.open(`Using first ${MAX_GALLERY} images (max allowed).`, 'OK', { duration: 4000 });
+      this.galleryFiles.set(picked.slice(0, MAX_GALLERY));
+    } else {
+      this.galleryFiles.set(picked);
+    }
+    input.value = '';
+  }
+
+  removeGalleryFile(index: number): void {
+    this.galleryFiles.update((files) => files.filter((_, i) => i !== index));
+  }
+
+  private partNameForIndex(file: File, index: number): string {
+    return `gallery-${index}-${file.name}`;
   }
 
   onSubmit(): void {
     if (this.form.invalid || this.submitting()) return;
-    const file = this.imageFile();
-    if (!file) {
-      this.snackBar.open('Choose a gallery image file.', 'Dismiss', { duration: 5000 });
+    const files = this.galleryFiles();
+    if (files.length === 0) {
+      this.snackBar.open('Choose at least one gallery image (up to 10).', 'Dismiss', { duration: 5000 });
       return;
     }
 
@@ -72,27 +87,34 @@ export class AdminAddProductComponent {
       return;
     }
 
+    const nameTrim = raw.name.trim();
+    const gallery = files.map((file, i) => {
+      const part = this.partNameForIndex(file, i);
+      return {
+        thumbFile: part,
+        hdFile: part,
+        alt: `${nameTrim} — ${i + 1}`,
+      };
+    });
+
     const productPayload = {
-      name: raw.name.trim(),
+      name: nameTrim,
       description: raw.description.trim(),
       price: raw.price,
       sku: raw.sku.trim(),
       stockQuantity: raw.stockQuantity,
       categories,
       brand: raw.brand.trim() || undefined,
-      gallery: [
-        {
-          thumbFile: file.name,
-          hdFile: file.name,
-          alt: raw.imageAlt.trim() || raw.name.trim(),
-        },
-      ],
+      gallery,
       inStock: true,
     };
 
     const formData = new FormData();
     formData.append('product', new Blob([JSON.stringify(productPayload)], { type: 'application/json' }));
-    formData.append('files', file, file.name);
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i]!;
+      formData.append('files', file, this.partNameForIndex(file, i));
+    }
 
     this.submitting.set(true);
     this.productService
@@ -106,8 +128,16 @@ export class AdminAddProductComponent {
           this.snackBar.open(`Product created: ${created.name}`, 'View', { duration: 6000 }).onAction().subscribe(() => {
             void this.router.navigate(['/products', created.id]);
           });
-          this.form.reset({ name: '', description: '', price: 0, sku: '', stockQuantity: 0, categories: '', brand: '', imageAlt: 'Product image' });
-          this.imageFile.set(null);
+          this.form.reset({
+            name: '',
+            description: '',
+            price: 0,
+            sku: '',
+            stockQuantity: 0,
+            categories: '',
+            brand: '',
+          });
+          this.galleryFiles.set([]);
         },
         error: (err: unknown) => {
           const msg =

@@ -1,7 +1,9 @@
 <mat-card class="card">
   <mat-card-header>
     <mat-card-title>Add product</mat-card-title>
-    <mat-card-subtitle>Creates catalog + Firestore data; run reindex from the Admin menu so search picks it up.</mat-card-subtitle>
+    <mat-card-subtitle
+      >Creates catalog + Firestore data; run reindex from the Admin menu so search picks it up.</mat-card-subtitle
+    >
   </mat-card-header>
   <mat-card-content>
     <form [formGroup]="form" (ngSubmit)="onSubmit()" class="form">
@@ -44,20 +46,21 @@
         <input matInput formControlName="brand" autocomplete="off" />
       </mat-form-field>
 
-      <mat-form-field appearance="outline" class="full">
-        <mat-label>Image alt text</mat-label>
-        <input matInput formControlName="imageAlt" />
-      </mat-form-field>
-
       <div class="file-row">
         <label class="file-label">
-          <span class="file-title">Gallery image</span>
-          <input type="file" accept="image/*" (change)="onFileSelected($event)" />
+          <span class="file-title">Gallery images</span>
+          <input type="file" accept="image/*" multiple (change)="onGalleryFilesSelected($event)" />
         </label>
-        @if (imageFile(); as f) {
-          <span class="file-name">{{ f.name }}</span>
-        } @else {
-          <span class="file-hint">Required — used as thumbnail and HD</span>
+        <span class="file-hint">1–10 images; each file is used as both thumbnail and HD. Unique names are assigned for upload.</span>
+        @if (galleryFiles().length > 0) {
+          <ul class="file-list">
+            @for (f of galleryFiles(); track $index) {
+              <li>
+                <span>{{ f.name }}</span>
+                <button type="button" class="linkish" (click)="removeGalleryFile($index)">Remove</button>
+              </li>
+            }
+          </ul>
         }
       </div>
 
