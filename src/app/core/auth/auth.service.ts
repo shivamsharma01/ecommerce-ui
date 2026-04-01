@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, catchError, finalize, of, tap } from 'rxjs';
+import { jwtScopes, parseJwtPayload } from './jwt.util';
 
 /** Persists JWT across full page reloads in the same tab; cleared when the tab is closed. */
 const ACCESS_TOKEN_STORAGE_KEY = 'mcart.accessToken';
@@ -131,5 +132,15 @@ export class AuthService {
 
   isAuthenticated(): boolean {
     return this.accessToken != null && this.accessToken.length > 0;
+  }
+
+  /**
+   * Platform admins receive {@code product.admin} and {@code reindex} in the JWT scope claim
+   * (see auth service JwtTokenProvider).
+   */
+  isPlatformAdmin(): boolean {
+    const token = this.accessToken;
+    if (!token) return false;
+    return jwtScopes(parseJwtPayload(token)).includes('product.admin');
   }
 }
