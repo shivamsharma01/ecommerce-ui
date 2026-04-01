@@ -4,6 +4,22 @@
     <span class="spacer"></span>
     <a mat-button routerLink="/catalog" routerLinkActive="active">Catalog</a>
     <a mat-button routerLink="/search" routerLinkActive="active">Search</a>
+    @if (auth.isAuthenticated() && auth.isPlatformAdmin()) {
+      <button mat-button [matMenuTriggerFor]="adminMenu" aria-label="Admin menu">
+        <mat-icon>admin_panel_settings</mat-icon>
+        Admin
+      </button>
+      <mat-menu #adminMenu="matMenu">
+        <a mat-menu-item routerLink="/admin/add-product">
+          <mat-icon>add_box</mat-icon>
+          Add product
+        </a>
+        <button mat-menu-item type="button" (click)="triggerReindex()">
+          <mat-icon>sync</mat-icon>
+          Reindex search
+        </button>
+      </mat-menu>
+    }
     @if (auth.isAuthenticated()) {
       <button mat-button [matMenuTriggerFor]="accountMenu" aria-label="Account menu">
         <mat-icon>account_circle</mat-icon>

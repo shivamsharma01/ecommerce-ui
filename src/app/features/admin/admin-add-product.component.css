@@ -1,0 +1,60 @@
+.card {
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.full {
+  width: 100%;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.row mat-form-field {
+  flex: 1 1 140px;
+}
+
+.file-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin: 0.5rem 0 1rem;
+}
+
+.file-label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.875rem;
+}
+
+.file-title {
+  font-weight: 500;
+  color: var(--mat-sys-on-surface-variant, rgba(0, 0, 0, 0.7));
+}
+
+.file-name {
+  font-size: 0.875rem;
+}
+
+.file-hint {
+  font-size: 0.8rem;
+  opacity: 0.75;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
