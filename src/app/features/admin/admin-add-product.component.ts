@@ -9,6 +9,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { finalize } from 'rxjs';
 import { ProductService } from '../../core/services/product.service';
+import { httpErrorMessage } from '../../core/http/http-error-message';
 
 const MAX_GALLERY = 10;
 
@@ -35,6 +36,7 @@ export class AdminAddProductComponent {
   private readonly destroyRef = inject(DestroyRef);
 
   protected readonly submitting = signal(false);
+  protected readonly apiError = signal<string | null>(null);
   protected readonly galleryFiles = signal<File[]>([]);
 
   protected readonly form = this.fb.nonNullable.group({
@@ -69,6 +71,7 @@ export class AdminAddProductComponent {
 
   onSubmit(): void {
     if (this.form.invalid || this.submitting()) return;
+    this.apiError.set(null);
     const files = this.galleryFiles();
     if (files.length === 0) {
       this.snackBar.open('Choose at least one gallery image (up to 10).', 'Dismiss', { duration: 5000 });
@@ -125,28 +128,11 @@ export class AdminAddProductComponent {
       )
       .subscribe({
         next: (created) => {
-          this.snackBar.open(`Product created: ${created.name}`, 'View', { duration: 6000 }).onAction().subscribe(() => {
-            void this.router.navigate(['/products', created.id]);
-          });
-          this.form.reset({
-            name: '',
-            description: '',
-            price: 0,
-            sku: '',
-            stockQuantity: 0,
-            categories: '',
-            brand: '',
-          });
-          this.galleryFiles.set([]);
+          this.snackBar.open(`Product created: ${created.name}`, 'OK', { duration: 3000 });
+          void this.router.navigate(['/catalog']);
         },
         error: (err: unknown) => {
-          const msg =
-            typeof err === 'object' && err !== null && 'error' in err
-              ? typeof (err as { error?: unknown }).error === 'string'
-                ? (err as { error: string }).error
-                : (err as { error?: { message?: string } }).error?.message
-              : null;
-          this.snackBar.open(msg ?? 'Could not create product.', 'Dismiss', { duration: 8000 });
+          this.apiError.set(httpErrorMessage(err, 'Could not create product.'));
         },
       });
   }

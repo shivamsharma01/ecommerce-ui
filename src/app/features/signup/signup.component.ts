@@ -1,5 +1,6 @@
-import { ChangeDetectorRef, Component, inject } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { ChangeDetectorRef, Component, DestroyRef, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 import {
   AbstractControl,
@@ -39,9 +40,15 @@ export class SignupComponent {
   private readonly fb = inject(FormBuilder);
   private readonly auth = inject(AuthService);
   private readonly cdr = inject(ChangeDetectorRef);
+  private readonly route = inject(ActivatedRoute);
+  private readonly destroyRef = inject(DestroyRef);
 
   protected errorMessage = '';
   protected successMessage = '';
+  /** Shown after email verification redirect (GET /auth/verify-email → /signup?verified=1). */
+  protected verificationSuccessMessage = '';
+  /** Shown when verification link is invalid or expired. */
+  protected verificationErrorMessage = '';
   protected isLoading = false;
   protected resendMessage = '';
   protected isResending = false;
@@ -57,6 +64,26 @@ export class SignupComponent {
     },
     { validators: passwordsMatch },
   );
+
+  constructor() {
+    this.route.queryParamMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((qs) => {
+      this.verificationSuccessMessage = '';
+      this.verificationErrorMessage = '';
+      if (qs.get('verified') === '1') {
+        this.verificationSuccessMessage =
+          'Your email is verified. You can sign in with your password.';
+      }
+      const err = qs.get('error');
+      if (err) {
+        try {
+          this.verificationErrorMessage = decodeURIComponent(err);
+        } catch {
+          this.verificationErrorMessage = err;
+        }
+      }
+      this.cdr.markForCheck();
+    });
+  }
 
   onSubmit(): void {
     if (this.form.invalid || this.isLoading) return;

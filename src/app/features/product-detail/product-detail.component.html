@@ -18,6 +18,9 @@
         Back
       </button>
       <a mat-button routerLink="/catalog" class="browse-link">Continue shopping</a>
+      @if (auth.isPlatformAdmin() && product(); as ep) {
+        <a mat-stroked-button color="primary" [routerLink]="['/admin/edit-product', ep.id]">Edit product</a>
+      }
     </div>
 
     @if (loading()) {

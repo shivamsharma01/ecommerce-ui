@@ -9,6 +9,15 @@
     </mat-card-header>
     <mat-card-content>
       <form [formGroup]="form" (ngSubmit)="onSubmit()" class="signup-form">
+        @if (verificationSuccessMessage) {
+          <div class="success-message">{{ verificationSuccessMessage }}</div>
+          <p class="verify-follow">
+            <a routerLink="/login">Sign in</a>
+          </p>
+        }
+        @if (verificationErrorMessage) {
+          <div class="error-message">{{ verificationErrorMessage }}</div>
+        }
         @if (errorMessage) {
           <div class="error-message">{{ errorMessage }}</div>
         }

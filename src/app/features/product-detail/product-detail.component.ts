@@ -17,6 +17,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ProductService } from '../../core/services/product.service';
+import { AuthService } from '../../core/auth';
 import type { Product, ProductGalleryImage } from '../../shared/models/product.model';
 
 @Component({
@@ -40,6 +41,7 @@ import type { Product, ProductGalleryImage } from '../../shared/models/product.m
   styleUrl: './product-detail.component.css',
 })
 export class ProductDetailComponent {
+  protected readonly auth = inject(AuthService);
   private readonly route = inject(ActivatedRoute);
   private readonly productService = inject(ProductService);
   private readonly destroyRef = inject(DestroyRef);

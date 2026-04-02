@@ -44,6 +44,12 @@ export const routes: Routes = [
           import('./features/admin/admin-add-product.component').then((m) => m.AdminAddProductComponent),
         canActivate: [authGuard, adminGuard],
       },
+      {
+        path: 'admin/edit-product/:id',
+        loadComponent: () =>
+          import('./features/admin/admin-edit-product.component').then((m) => m.AdminEditProductComponent),
+        canActivate: [authGuard, adminGuard],
+      },
     ],
   },
   { path: '**', redirectTo: 'catalog' },

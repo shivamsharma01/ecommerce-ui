@@ -81,3 +81,58 @@
   gap: 0.75rem;
   margin-top: 0.5rem;
 }
+
+.error-banner {
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--mat-sys-error, #b00020) 12%, transparent);
+  color: var(--mat-sys-on-surface, #1a1a1a);
+  font-size: 0.9rem;
+}
+
+.state-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 2rem;
+}
+
+.toggle-row {
+  margin: 0.5rem 0 1rem;
+}
+
+.gallery-section {
+  margin: 0.5rem 0 1rem;
+}
+
+.gallery-edit-list {
+  list-style: none;
+  margin: 0.5rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.gallery-edit-list li {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  font-size: 0.8rem;
+}
+
+.gallery-thumb {
+  width: 56px;
+  height: 56px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+.gallery-url {
+  flex: 1 1 200px;
+  word-break: break-all;
+  opacity: 0.85;
+}
