@@ -38,6 +38,7 @@
     <mat-form-field appearance="outline">
       <mat-label>Min rating</mat-label>
       <input matInput type="number" min="0" max="5" step="0.1" [(ngModel)]="minRating" />
+      <mat-hint>Only products with a stored rating match (unrated items are hidden).</mat-hint>
     </mat-form-field>
   </div>
 
