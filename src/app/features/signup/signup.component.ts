@@ -14,6 +14,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { AuthService } from '../../core/auth';
+import { httpErrorMessage } from '../../core/http/http-error-message';
 
 function passwordsMatch(group: AbstractControl): ValidationErrors | null {
   const password = group.get('password')?.value as string | undefined;
@@ -149,9 +150,11 @@ export class SignupComponent {
           this.resendMessage =
             msg || 'If the email exists, a verification link has been sent.';
         },
-        error: () => {
-          this.resendMessage =
-            'Could not resend verification email right now. Please try again later.';
+        error: (err: unknown) => {
+          this.resendMessage = httpErrorMessage(
+            err,
+            'Could not resend verification email right now. Please try again later.',
+          );
         },
       });
   }
