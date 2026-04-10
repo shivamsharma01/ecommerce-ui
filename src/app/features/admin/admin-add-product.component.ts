@@ -9,6 +9,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { finalize } from 'rxjs';
 import { ProductService } from '../../core/services/product.service';
+import { InventoryService } from '../../core/services/inventory.service';
 import { httpErrorMessage } from '../../core/http/http-error-message';
 
 const MAX_GALLERY = 10;
@@ -31,11 +32,13 @@ const MAX_GALLERY = 10;
 export class AdminAddProductComponent {
   private readonly fb = inject(FormBuilder);
   private readonly productService = inject(ProductService);
+  private readonly inventoryService = inject(InventoryService);
   private readonly router = inject(Router);
   private readonly snackBar = inject(MatSnackBar);
   private readonly destroyRef = inject(DestroyRef);
 
   protected readonly submitting = signal(false);
+  protected readonly syncingInventory = signal(false);
   protected readonly apiError = signal<string | null>(null);
   protected readonly galleryFiles = signal<File[]>([]);
 
@@ -63,6 +66,27 @@ export class AdminAddProductComponent {
 
   removeGalleryFile(index: number): void {
     this.galleryFiles.update((files) => files.filter((_, i) => i !== index));
+  }
+
+  syncInventoryFromCatalog(): void {
+    if (this.syncingInventory()) return;
+    this.syncingInventory.set(true);
+    this.inventoryService
+      .syncFromCatalog()
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        finalize(() => this.syncingInventory.set(false)),
+      )
+      .subscribe({
+        next: (res) => {
+          this.snackBar.open(`Inventory synced: ${res.productsSynced} product row(s) upserted.`, 'OK', {
+            duration: 5000,
+          });
+        },
+        error: (err: unknown) => {
+          this.snackBar.open(httpErrorMessage(err, 'Could not sync inventory.'), 'Dismiss', { duration: 6000 });
+        },
+      });
   }
 
   private partNameForIndex(file: File, index: number): string {

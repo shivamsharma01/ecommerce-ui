@@ -3,6 +3,10 @@
   margin: 0 auto;
 }
 
+.header-tools {
+  margin-top: 0.75rem;
+}
+
 .form {
   display: flex;
   flex-direction: column;
