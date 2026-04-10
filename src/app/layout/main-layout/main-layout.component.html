@@ -4,6 +4,10 @@
     <span class="spacer"></span>
     <a mat-button routerLink="/catalog" routerLinkActive="active">Catalog</a>
     <a mat-button routerLink="/search" routerLinkActive="active">Search</a>
+    @if (auth.isAuthenticated()) {
+      <a mat-button routerLink="/cart" routerLinkActive="active">Cart</a>
+      <a mat-button routerLink="/orders" routerLinkActive="active">Orders</a>
+    }
     @if (auth.isAuthenticated() && auth.isPlatformAdmin()) {
       <button mat-button [matMenuTriggerFor]="adminMenu" aria-label="Admin menu">
         <mat-icon>admin_panel_settings</mat-icon>

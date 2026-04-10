@@ -1,0 +1,95 @@
+<div class="page">
+  <div class="header-row">
+    <h1>Your cart</h1>
+    <a mat-stroked-button routerLink="/catalog">Continue shopping</a>
+  </div>
+
+  @if (loading()) {
+    <div class="state-block">
+      <mat-spinner diameter="40" />
+      <p>Loading cart…</p>
+    </div>
+  } @else if (error(); as err) {
+    <mat-card appearance="outlined" class="state-card">
+      <mat-card-content>
+        <p>{{ err }}</p>
+        <button mat-flat-button color="primary" type="button" (click)="refresh()">Retry</button>
+      </mat-card-content>
+    </mat-card>
+  } @else if (rows().length === 0) {
+    <mat-card appearance="outlined" class="state-card">
+      <mat-card-content>
+        <p>Your cart is empty.</p>
+        <a mat-flat-button color="primary" routerLink="/catalog">Browse products</a>
+      </mat-card-content>
+    </mat-card>
+  } @else {
+    <div class="grid">
+      <div class="list">
+        @for (row of rows(); track row.productId) {
+          <mat-card appearance="outlined" class="item">
+            <mat-card-content class="item-inner">
+              <div class="meta">
+                <div class="title">
+                  @if (row.product; as p) {
+                    <a [routerLink]="['/products', p.id]">{{ p.name }}</a>
+                    <div class="muted">{{ p.brand }}</div>
+                  } @else {
+                    <span>{{ row.productId }}</span>
+                  }
+                </div>
+                <div class="price">
+                  @if (row.product; as p) {
+                    {{ p.price | currency: 'INR' : 'symbol' : '1.0-0' }}
+                  }
+                </div>
+              </div>
+
+              <div class="actions">
+                <div class="qty">
+                  <button mat-icon-button type="button" (click)="changeQty(row, -1)" aria-label="Decrease quantity">
+                    <mat-icon>remove</mat-icon>
+                  </button>
+                  <span class="qty-num">{{ row.quantity }}</span>
+                  <button mat-icon-button type="button" (click)="changeQty(row, 1)" aria-label="Increase quantity">
+                    <mat-icon>add</mat-icon>
+                  </button>
+                </div>
+                <button mat-stroked-button type="button" (click)="remove(row.productId)">Remove</button>
+              </div>
+            </mat-card-content>
+          </mat-card>
+        }
+      </div>
+
+      <aside class="summary">
+        <mat-card appearance="outlined">
+          <mat-card-header>
+            <mat-card-title>Summary</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="sum-row">
+              <span>Subtotal</span>
+              <strong>{{ subtotal() | currency: 'INR' : 'symbol' : '1.0-0' }}</strong>
+            </div>
+            <button
+              mat-flat-button
+              color="primary"
+              type="button"
+              class="checkout-btn"
+              (click)="checkout()"
+              [disabled]="checkingOut()"
+            >
+              @if (checkingOut()) {
+                Processing…
+              } @else {
+                Checkout
+              }
+            </button>
+          </mat-card-content>
+        </mat-card>
+      </aside>
+    </div>
+  }
+</div>
+

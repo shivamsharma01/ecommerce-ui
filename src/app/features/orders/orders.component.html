@@ -1,0 +1,57 @@
+<div class="page">
+  <div class="header-row">
+    <h1>Your orders</h1>
+    <button mat-stroked-button type="button" (click)="refresh()">Refresh</button>
+  </div>
+
+  @if (loading()) {
+    <div class="state-block">
+      <mat-spinner diameter="40" />
+      <p>Loading orders…</p>
+    </div>
+  } @else if (error(); as err) {
+    <mat-card appearance="outlined" class="state-card">
+      <mat-card-content>
+        <p>{{ err }}</p>
+        <button mat-flat-button color="primary" type="button" (click)="refresh()">Retry</button>
+      </mat-card-content>
+    </mat-card>
+  } @else if (orders().length === 0) {
+    <mat-card appearance="outlined" class="state-card">
+      <mat-card-content>
+        <p>No orders yet.</p>
+      </mat-card-content>
+    </mat-card>
+  } @else {
+    <div class="list">
+      @for (o of orders(); track o.orderId) {
+        <mat-card appearance="outlined" class="order">
+          <mat-card-header>
+            <mat-card-title>Order {{ o.orderId }}</mat-card-title>
+            <mat-card-subtitle>
+              {{ o.createdAt | date: 'medium' }} · {{ o.status }}
+            </mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="sum-row">
+              <span>Total</span>
+              <strong>{{ o.totalAmount / 100 | currency: 'INR' : 'symbol' : '1.0-0' }}</strong>
+            </div>
+            <ul class="items">
+              @for (it of o.items; track it.productId) {
+                <li>
+                  <span class="pid">{{ it.productId }}</span>
+                  <span class="qty">×{{ it.quantity }}</span>
+                  <span class="line">
+                    {{ it.lineTotal / 100 | currency: 'INR' : 'symbol' : '1.0-0' }}
+                  </span>
+                </li>
+              }
+            </ul>
+          </mat-card-content>
+        </mat-card>
+      }
+    </div>
+  }
+</div>
+

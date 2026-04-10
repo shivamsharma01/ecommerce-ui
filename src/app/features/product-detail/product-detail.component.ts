@@ -18,6 +18,8 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ProductService } from '../../core/services/product.service';
 import { AuthService } from '../../core/auth';
+import { CartService } from '../../core/services/cart.service';
+import { httpErrorMessage } from '../../core/http/http-error-message';
 import type { Product, ProductGalleryImage } from '../../shared/models/product.model';
 
 @Component({
@@ -44,6 +46,7 @@ export class ProductDetailComponent {
   protected readonly auth = inject(AuthService);
   private readonly route = inject(ActivatedRoute);
   private readonly productService = inject(ProductService);
+  private readonly cartService = inject(CartService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly location = inject(Location);
   private readonly snackBar = inject(MatSnackBar);
@@ -115,11 +118,25 @@ export class ProductDetailComponent {
   protected addToCart(): void {
     const p = this.product();
     if (!p) return;
-    this.snackBar.open(`“${p.name}” added to cart (demo)`, 'Dismiss', {
-      duration: 3500,
-      horizontalPosition: 'center',
-      verticalPosition: 'bottom',
-    });
+    if (!this.auth.isAuthenticated()) {
+      this.snackBar.open('Sign in to add items to your cart.', 'OK', { duration: 4000 });
+      return;
+    }
+    this.cartService
+      .upsertItem(p.id, 1)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () =>
+          this.snackBar.open(`Added “${p.name}” to cart.`, 'OK', {
+            duration: 3500,
+            horizontalPosition: 'center',
+            verticalPosition: 'bottom',
+          }),
+        error: (err: unknown) =>
+          this.snackBar.open(httpErrorMessage(err, 'Could not add to cart.'), 'Dismiss', {
+            duration: 6000,
+          }),
+      });
   }
 
   protected wishlist(): void {
