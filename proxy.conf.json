@@ -5,6 +5,26 @@
     "secure": false
   },
   {
+    "context": ["/product-indexer"],
+    "target": "http://localhost:8085",
+    "secure": false
+  },
+  {
+    "context": ["/inventory"],
+    "target": "http://localhost:8086",
+    "secure": false
+  },
+  {
+    "context": ["/cart"],
+    "target": "http://localhost:8087",
+    "secure": false
+  },
+  {
+    "context": ["/orders"],
+    "target": "http://localhost:8089",
+    "secure": false
+  },
+  {
     "context": ["/user"],
     "target": "http://localhost:8082",
     "secure": false

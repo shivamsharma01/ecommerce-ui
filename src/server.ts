@@ -46,6 +46,22 @@ function createLocalApiProxy(): express.RequestHandler {
       base: new URL(process.env['MCART_PROXY_SEARCH'] ?? 'http://127.0.0.1:8083'),
     },
     {
+      prefix: '/product-indexer',
+      base: new URL(process.env['MCART_PROXY_PRODUCT_INDEXER'] ?? 'http://127.0.0.1:8085'),
+    },
+    {
+      prefix: '/inventory',
+      base: new URL(process.env['MCART_PROXY_INVENTORY'] ?? 'http://127.0.0.1:8086'),
+    },
+    {
+      prefix: '/cart',
+      base: new URL(process.env['MCART_PROXY_CART'] ?? 'http://127.0.0.1:8087'),
+    },
+    {
+      prefix: '/orders',
+      base: new URL(process.env['MCART_PROXY_ORDER'] ?? 'http://127.0.0.1:8089'),
+    },
+    {
       prefix: '/user',
       base: new URL(process.env['MCART_PROXY_USER'] ?? 'http://127.0.0.1:8082'),
     },
