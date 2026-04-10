@@ -1,6 +1,7 @@
 import { CurrencyPipe, DatePipe } from '@angular/common';
 import { Component, DestroyRef, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -12,6 +13,7 @@ import { httpErrorMessage } from '../../core/http/http-error-message';
   selector: 'app-orders',
   standalone: true,
   imports: [
+    RouterLink,
     CurrencyPipe,
     DatePipe,
     MatButtonModule,

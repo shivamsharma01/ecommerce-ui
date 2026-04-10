@@ -1,0 +1,63 @@
+<div class="page">
+  <div class="header-row">
+    <a mat-button routerLink="/orders" class="back-link">
+      <mat-icon>arrow_back</mat-icon>
+      All orders
+    </a>
+  </div>
+
+  @if (loading()) {
+    <div class="state-block">
+      <mat-spinner diameter="40" />
+      <p>Loading order…</p>
+    </div>
+  } @else if (error(); as err) {
+    <mat-card appearance="outlined" class="state-card">
+      <mat-card-content>
+        <p>{{ err }}</p>
+        <a mat-flat-button color="primary" routerLink="/orders">Back to orders</a>
+      </mat-card-content>
+    </mat-card>
+  } @else if (order(); as o) {
+    @if (paymentSuccessBanner()) {
+      <mat-card appearance="outlined" class="success-banner">
+        <mat-card-content class="success-inner">
+          <mat-icon class="success-icon">check_circle</mat-icon>
+          <div class="success-text">
+            <strong>Payment successful</strong>
+            <p>Your order is confirmed. You can return to <a routerLink="/orders">all orders</a> anytime.</p>
+          </div>
+          <button mat-icon-button type="button" (click)="dismissSuccessBanner()" aria-label="Dismiss">
+            <mat-icon>close</mat-icon>
+          </button>
+        </mat-card-content>
+      </mat-card>
+    }
+
+    <mat-card appearance="outlined" class="order">
+      <mat-card-header>
+        <mat-card-title>Order {{ o.orderId }}</mat-card-title>
+        <mat-card-subtitle>
+          {{ o.createdAt | date: 'medium' }} · {{ o.status }}
+        </mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="sum-row">
+          <span>Total</span>
+          <strong>{{ o.totalAmount / 100 | currency: 'INR' : 'symbol' : '1.0-0' }}</strong>
+        </div>
+        <ul class="items">
+          @for (it of o.items; track it.productId) {
+            <li>
+              <span class="pid">{{ it.productId }}</span>
+              <span class="qty">×{{ it.quantity }}</span>
+              <span class="line">
+                {{ it.lineTotal / 100 | currency: 'INR' : 'symbol' : '1.0-0' }}
+              </span>
+            </li>
+          }
+        </ul>
+      </mat-card-content>
+    </mat-card>
+  }
+</div>

@@ -27,7 +27,9 @@
       @for (o of orders(); track o.orderId) {
         <mat-card appearance="outlined" class="order">
           <mat-card-header>
-            <mat-card-title>Order {{ o.orderId }}</mat-card-title>
+            <mat-card-title>
+              <a [routerLink]="['/orders', o.orderId]" class="order-title-link">Order {{ o.orderId }}</a>
+            </mat-card-title>
             <mat-card-subtitle>
               {{ o.createdAt | date: 'medium' }} · {{ o.status }}
             </mat-card-subtitle>

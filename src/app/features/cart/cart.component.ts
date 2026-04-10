@@ -1,7 +1,7 @@
 import { CurrencyPipe } from '@angular/common';
 import { Component, DestroyRef, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -40,6 +40,7 @@ export class CartComponent {
   private readonly orderService = inject(OrderService);
   private readonly productService = inject(ProductService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly router = inject(Router);
   private readonly snackBar = inject(MatSnackBar);
 
   protected readonly loading = signal(true);
@@ -132,8 +133,9 @@ export class CartComponent {
       )
       .subscribe({
         next: (r) => {
-          this.snackBar.open(`Order placed (${r.status}).`, 'OK', { duration: 5000 });
-          this.refresh();
+          void this.router.navigate(['/orders', r.orderId], {
+            queryParams: { success: '1' },
+          });
         },
         error: (err: unknown) => {
           this.error.set(httpErrorMessage(err, 'Checkout failed.'));
