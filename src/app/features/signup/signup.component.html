@@ -41,6 +41,9 @@
           @if (resendMessage) {
             <div class="success-message">{{ resendMessage }}</div>
           }
+          @if (resendErrorMessage) {
+            <div class="error-message">{{ resendErrorMessage }}</div>
+          }
         }
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>First name</mat-label>

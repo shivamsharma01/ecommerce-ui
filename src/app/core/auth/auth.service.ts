@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable, catchError, finalize, of, tap } from 'rxjs';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { Observable, catchError, finalize, mergeMap, of, tap, throwError } from 'rxjs';
 import { jwtScopes, parseJwtPayload } from './jwt.util';
 
 /** Persists JWT across full page reloads in the same tab; cleared when the tab is closed. */
@@ -90,9 +90,27 @@ export class AuthService {
 
   resendVerification(email: string): Observable<string> {
     const body: ResendVerificationRequest = { email: email.trim() };
-    return this.http.post('/auth/resend-verification', body, {
-      responseType: 'text',
-    });
+    return this.http
+      .post('/auth/resend-verification', body, {
+        responseType: 'text',
+      })
+      .pipe(
+        mergeMap((raw) => {
+          const t = raw.trim();
+          if (t.startsWith('<!DOCTYPE') || t.toLowerCase().startsWith('<html')) {
+            return throwError(
+              () =>
+                new HttpErrorResponse({
+                  status: 502,
+                  statusText: 'Bad Gateway',
+                  error:
+                    'Received the app HTML page instead of the auth API. If you run the SSR Node server locally, start it with MCART_LOCAL_API_PROXY=1 (see src/server.ts) and run auth on port 8081; or use ng serve so proxy.conf.json forwards /auth.',
+                }),
+            );
+          }
+          return of(raw);
+        }),
+      );
   }
 
   refresh(): Observable<LoginResponse> {

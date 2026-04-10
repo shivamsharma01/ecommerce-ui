@@ -9,6 +9,29 @@
         @if (errorMessage) {
           <div class="error-message">{{ errorMessage }}</div>
         }
+        @if (emailNotVerified) {
+          <div class="verify-resend">
+            <button
+              mat-stroked-button
+              type="button"
+              (click)="onResendVerification()"
+              [disabled]="isResending || form.get('email')?.invalid"
+              class="resend-btn"
+            >
+              @if (isResending) {
+                Sending…
+              } @else {
+                Resend verification email
+              }
+            </button>
+            @if (resendMessage) {
+              <div class="success-message">{{ resendMessage }}</div>
+            }
+            @if (resendErrorMessage) {
+              <div class="error-message resend-feedback">{{ resendErrorMessage }}</div>
+            }
+          </div>
+        }
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>Email</mat-label>
           <input matInput type="email" formControlName="email" placeholder="you@example.com" />

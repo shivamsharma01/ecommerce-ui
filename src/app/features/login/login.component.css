@@ -34,6 +34,26 @@
   margin-bottom: 0.5rem;
 }
 
+.verify-resend {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin: -0.25rem 0 0.25rem;
+}
+
+.resend-btn {
+  align-self: flex-start;
+}
+
+.success-message {
+  color: var(--mat-primary-default, #1565c0);
+  font-size: 0.875rem;
+}
+
+.resend-feedback {
+  margin-bottom: 0;
+}
+
 .footer-link {
   margin-top: 1rem;
   font-size: 0.875rem;

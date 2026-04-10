@@ -7,6 +7,10 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { AuthService } from '../../core/auth';
+import { httpErrorMessage } from '../../core/http/http-error-message';
+
+/** Must match auth service login error when email is unverified. */
+const EMAIL_NOT_VERIFIED_MESSAGE = 'Email not verified';
 
 @Component({
   selector: 'app-login',
@@ -29,6 +33,11 @@ export class LoginComponent {
   private readonly cdr = inject(ChangeDetectorRef);
 
   protected errorMessage = '';
+  /** True when the last login attempt failed because the account email is not verified yet. */
+  protected emailNotVerified = false;
+  protected resendMessage = '';
+  protected resendErrorMessage = '';
+  protected isResending = false;
   protected isLoading = false;
 
   protected form = this.fb.nonNullable.group({
@@ -40,6 +49,9 @@ export class LoginComponent {
     if (this.form.invalid || this.isLoading) return;
 
     this.errorMessage = '';
+    this.emailNotVerified = false;
+    this.resendMessage = '';
+    this.resendErrorMessage = '';
     this.isLoading = true;
 
     const { email, password } = this.form.getRawValue();
@@ -58,13 +70,46 @@ export class LoginComponent {
         },
         error: (err) => {
           const e = err?.error;
+          let msg: string;
           if (typeof e === 'string' && e.length > 0) {
-            this.errorMessage = e;
+            msg = e;
           } else if (e?.message) {
-            this.errorMessage = e.message;
+            msg = e.message;
           } else {
-            this.errorMessage = 'Login failed. Please check your credentials.';
+            msg = 'Login failed. Please check your credentials.';
           }
+          this.errorMessage = msg;
+          this.emailNotVerified = msg === EMAIL_NOT_VERIFIED_MESSAGE;
+        },
+      });
+  }
+
+  onResendVerification(): void {
+    const email = this.form.getRawValue().email.trim();
+    if (!email || this.form.get('email')?.invalid || this.isResending) return;
+
+    this.resendMessage = '';
+    this.resendErrorMessage = '';
+    this.isResending = true;
+
+    this.auth
+      .resendVerification(email)
+      .pipe(
+        finalize(() => {
+          this.isResending = false;
+          this.cdr.markForCheck();
+        }),
+      )
+      .subscribe({
+        next: (text) => {
+          this.resendMessage =
+            text || 'If the email exists, a verification link has been sent.';
+        },
+        error: (err: unknown) => {
+          this.resendErrorMessage = httpErrorMessage(
+            err,
+            'Could not resend verification email right now. Please try again later.',
+          );
         },
       });
   }

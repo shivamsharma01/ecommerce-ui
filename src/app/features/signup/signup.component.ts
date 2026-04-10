@@ -52,6 +52,7 @@ export class SignupComponent {
   protected verificationErrorMessage = '';
   protected isLoading = false;
   protected resendMessage = '';
+  protected resendErrorMessage = '';
   protected isResending = false;
   protected submittedEmail: string | null = null;
 
@@ -92,6 +93,7 @@ export class SignupComponent {
     this.errorMessage = '';
     this.successMessage = '';
     this.resendMessage = '';
+    this.resendErrorMessage = '';
     this.isLoading = true;
 
     const raw = this.form.getRawValue();
@@ -135,6 +137,7 @@ export class SignupComponent {
   onResendVerification(): void {
     if (!this.submittedEmail || this.isResending) return;
     this.resendMessage = '';
+    this.resendErrorMessage = '';
     this.isResending = true;
 
     this.auth
@@ -151,7 +154,7 @@ export class SignupComponent {
             msg || 'If the email exists, a verification link has been sent.';
         },
         error: (err: unknown) => {
-          this.resendMessage = httpErrorMessage(
+          this.resendErrorMessage = httpErrorMessage(
             err,
             'Could not resend verification email right now. Please try again later.',
           );

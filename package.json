@@ -7,7 +7,7 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "serve:ssr:mcart-ui": "node dist/mcart-ui/server/server.mjs"
+    "serve:ssr:mcart-ui": "MCART_LOCAL_API_PROXY=1 node dist/mcart-ui/server/server.mjs"
   },
   "prettier": {
     "overrides": [
