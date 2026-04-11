@@ -5,6 +5,7 @@ import {
   Location,
 } from '@angular/common';
 import { Component, DestroyRef, HostListener, computed, inject, signal } from '@angular/core';
+import { Meta, Title } from '@angular/platform-browser';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { finalize, of, switchMap } from 'rxjs';
@@ -20,7 +21,11 @@ import { ProductService } from '../../core/services/product.service';
 import { AuthService } from '../../core/auth';
 import { CartService } from '../../core/services/cart.service';
 import { httpErrorMessage } from '../../core/http/http-error-message';
+import { SiteOriginService } from '../../core/seo/site-origin.service';
+import { toAbsoluteUrl, truncatePlainText } from '../../core/seo/resolve-absolute-url';
 import type { Product, ProductGalleryImage } from '../../shared/models/product.model';
+
+const DEFAULT_DOCUMENT_TITLE = 'McartUi';
 
 @Component({
   selector: 'app-product-detail',
@@ -50,6 +55,9 @@ export class ProductDetailComponent {
   private readonly destroyRef = inject(DestroyRef);
   private readonly location = inject(Location);
   private readonly snackBar = inject(MatSnackBar);
+  private readonly title = inject(Title);
+  private readonly meta = inject(Meta);
+  private readonly siteOrigin = inject(SiteOriginService);
 
   protected readonly product = signal<Product | null>(null);
   protected readonly loading = signal(true);
@@ -77,6 +85,8 @@ export class ProductDetailComponent {
   });
 
   constructor() {
+    this.destroyRef.onDestroy(() => this.clearShareMeta());
+
     this.route.paramMap
       .pipe(
         switchMap((params) => {
@@ -84,6 +94,7 @@ export class ProductDetailComponent {
           if (!id) {
             this.error.set('Product id is missing.');
             this.loading.set(false);
+            this.clearShareMeta();
             return of(null);
           }
           this.loading.set(true);
@@ -98,13 +109,18 @@ export class ProductDetailComponent {
       )
       .subscribe({
         next: (product) => {
-          if (!product) return;
+          if (!product) {
+            this.clearShareMeta();
+            return;
+          }
           this.product.set(product);
           this.preloadNeighbors();
+          this.applyShareMeta(product);
         },
         error: () => {
           this.product.set(null);
           this.error.set('Unable to load product details. Please try again.');
+          this.clearShareMeta();
         },
       });
   }
@@ -197,5 +213,54 @@ export class ProductDetailComponent {
       const img = new Image();
       img.src = src;
     }
+  }
+
+  private applyShareMeta(product: Product): void {
+    const origin = this.siteOrigin.getOrigin();
+    const pagePath = `/products/${product.id}`;
+    const pageUrl = origin ? `${origin}${pagePath}` : pagePath;
+    const first = product.gallery?.[0];
+    const imageUrl = toAbsoluteUrl(first?.hdUrl ?? first?.thumbnailUrl, origin);
+
+    const title = `${product.name} | ${DEFAULT_DOCUMENT_TITLE}`;
+    const description = truncatePlainText(product.description, 200);
+
+    this.title.setTitle(title);
+    this.meta.updateTag({ name: 'description', content: description });
+
+    this.meta.updateTag({ property: 'og:type', content: 'website' });
+    this.meta.updateTag({ property: 'og:title', content: product.name });
+    this.meta.updateTag({ property: 'og:description', content: description });
+    this.meta.updateTag({ property: 'og:url', content: pageUrl });
+    if (imageUrl) {
+      this.meta.updateTag({ property: 'og:image', content: imageUrl });
+    } else {
+      this.meta.removeTag("property='og:image'");
+    }
+
+    this.meta.updateTag({ name: 'twitter:card', content: 'summary_large_image' });
+    this.meta.updateTag({ name: 'twitter:title', content: product.name });
+    this.meta.updateTag({ name: 'twitter:description', content: description });
+    if (imageUrl) {
+      this.meta.updateTag({ name: 'twitter:image', content: imageUrl });
+    } else {
+      this.meta.removeTag("name='twitter:image'");
+    }
+  }
+
+  private clearShareMeta(): void {
+    this.title.setTitle(DEFAULT_DOCUMENT_TITLE);
+    this.meta.removeTag("name='description'");
+
+    this.meta.removeTag("property='og:type'");
+    this.meta.removeTag("property='og:title'");
+    this.meta.removeTag("property='og:description'");
+    this.meta.removeTag("property='og:url'");
+    this.meta.removeTag("property='og:image'");
+
+    this.meta.removeTag("name='twitter:card'");
+    this.meta.removeTag("name='twitter:title'");
+    this.meta.removeTag("name='twitter:description'");
+    this.meta.removeTag("name='twitter:image'");
   }
 }
