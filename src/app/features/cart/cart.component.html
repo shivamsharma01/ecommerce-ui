@@ -30,13 +30,26 @@
           <mat-card appearance="outlined" class="item">
             <mat-card-content class="item-inner">
               <div class="meta">
-                <div class="title">
-                  @if (row.product; as p) {
-                    <a [routerLink]="['/products', p.id]">{{ p.name }}</a>
-                    <div class="muted">{{ p.brand }}</div>
+                <div class="line-with-media">
+                  @if (thumbUrl(row); as tu) {
+                    <img class="line-thumb" [src]="tu" alt="" />
                   } @else {
-                    <span>{{ row.productId }}</span>
+                    <div class="line-thumb line-thumb-placeholder" aria-hidden="true">
+                      <mat-icon>hide_image</mat-icon>
+                    </div>
                   }
+                  <div class="line-text">
+                    @if (row.product; as p) {
+                      <a class="line-name" [routerLink]="['/products', p.id]">{{ p.name }}</a>
+                      @if (p.brand) {
+                        <div class="line-brand">{{ p.brand }}</div>
+                      }
+                      <div class="line-pid">{{ row.productId }}</div>
+                    } @else {
+                      <span class="line-name line-name-loading">Loading product…</span>
+                      <div class="line-pid">{{ row.productId }}</div>
+                    }
+                  </div>
                 </div>
                 <div class="price">
                   @if (row.product; as p) {

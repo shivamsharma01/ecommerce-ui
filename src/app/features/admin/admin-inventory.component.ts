@@ -99,7 +99,7 @@ export class AdminInventoryComponent {
     if (!id || this.deleting()) return;
     if (
       !confirm(
-        `Delete product ${id} from the catalog? This cannot be undone. Inventory rows for this id should be cleaned up separately if needed.`,
+        `Delete product ${id} from the catalog? This cannot be undone. With Pub/Sub enabled, inventory removes the stock row when the delete event is processed.`,
       )
     ) {
       return;

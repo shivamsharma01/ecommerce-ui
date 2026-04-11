@@ -48,8 +48,18 @@
         </div>
         <ul class="items">
           @for (it of o.items; track it.productId) {
-            <li>
-              <span class="pid">{{ it.productId }}</span>
+            <li class="line-item">
+              @if (it.thumbnailUrl) {
+                <img class="line-thumb" [src]="it.thumbnailUrl" alt="" />
+              } @else {
+                <div class="line-thumb line-thumb-placeholder" aria-hidden="true">
+                  <mat-icon>hide_image</mat-icon>
+                </div>
+              }
+              <div class="line-main">
+                <span class="line-name">{{ it.productName || 'Product' }}</span>
+                <span class="line-pid">{{ it.productId }}</span>
+              </div>
               <span class="qty">×{{ it.quantity }}</span>
               <span class="line">
                 {{ it.lineTotal / 100 | currency: 'INR' : 'symbol' : '1.0-0' }}

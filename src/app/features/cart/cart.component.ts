@@ -122,6 +122,13 @@ export class CartComponent {
     return this.rows().reduce((sum, r) => sum + (r.product?.price ?? 0) * r.quantity, 0);
   }
 
+  /** First gallery thumbnail for line-item icon. */
+  protected thumbUrl(row: CartRow): string | null {
+    const g = row.product?.gallery;
+    const u = g?.[0]?.thumbnailUrl;
+    return u && u.length > 0 ? u : null;
+  }
+
   protected checkout(): void {
     if (this.checkingOut()) return;
     this.checkingOut.set(true);

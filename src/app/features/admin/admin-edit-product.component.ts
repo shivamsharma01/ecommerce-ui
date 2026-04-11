@@ -183,7 +183,7 @@ export class AdminEditProductComponent {
     if (!id || this.deleting()) return;
     if (
       !confirm(
-        `Delete product ${id} from the catalog? This cannot be undone. Consider removing inventory rows for this ID separately.`,
+        `Delete product ${id} from the catalog? This cannot be undone. Inventory drops the stock row when the product delete event is consumed from Pub/Sub.`,
       )
     ) {
       return;

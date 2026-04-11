@@ -5,6 +5,7 @@ import { RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
+import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { OrderService, type OrderSummary } from '../../core/services/order.service';
 import { httpErrorMessage } from '../../core/http/http-error-message';
@@ -18,6 +19,7 @@ import { httpErrorMessage } from '../../core/http/http-error-message';
     DatePipe,
     MatButtonModule,
     MatCardModule,
+    MatIconModule,
     MatProgressSpinnerModule,
   ],
   templateUrl: './orders.component.html',
