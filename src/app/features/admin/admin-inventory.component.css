@@ -1,0 +1,68 @@
+:host .card {
+  max-width: 960px;
+}
+
+.header-tools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  margin-top: 0.75rem;
+}
+
+.inv-table-wrap {
+  overflow-x: auto;
+  margin-top: 0.5rem;
+}
+
+.inv-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.inv-table th,
+.inv-table td {
+  text-align: left;
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.inv-table th {
+  font-weight: 600;
+  color: rgba(0, 0, 0, 0.65);
+}
+
+.inv-actions {
+  white-space: nowrap;
+}
+
+.inv-empty {
+  padding: 1rem 0;
+  color: rgba(0, 0, 0, 0.55);
+}
+
+.inv-delete-section {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.inv-section-title {
+  margin: 0 0 0.25rem;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.inv-delete-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: center;
+  margin-top: 0.75rem;
+}
+
+.inv-delete-field {
+  min-width: min(100%, 280px);
+  flex: 1;
+}

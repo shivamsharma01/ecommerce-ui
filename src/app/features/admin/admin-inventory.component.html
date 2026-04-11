@@ -1,0 +1,91 @@
+<mat-card class="card">
+  <mat-card-header>
+    <mat-card-title>Inventory</mat-card-title>
+    <mat-card-subtitle
+      >Stock rows used at checkout. Sync pulls quantities from the product catalog into this table.</mat-card-subtitle
+    >
+    <div class="header-tools">
+      <button mat-stroked-button type="button" (click)="refreshList()" [disabled]="loading()">
+        <mat-icon>refresh</mat-icon>
+        Refresh
+      </button>
+      <button
+        mat-flat-button
+        type="button"
+        color="primary"
+        (click)="syncFromCatalog()"
+        [disabled]="syncing() || loading()"
+      >
+        @if (syncing()) {
+          Syncing…
+        } @else {
+          Sync inventory from catalog
+        }
+      </button>
+    </div>
+  </mat-card-header>
+  <mat-card-content>
+    @if (loading() && rows().length === 0) {
+      <div class="state-block">
+        <mat-spinner diameter="40" />
+        <p>Loading inventory…</p>
+      </div>
+    } @else if (loadError(); as err) {
+      <p class="error-banner">{{ err }}</p>
+    } @else {
+      <div class="inv-table-wrap">
+        <table class="inv-table">
+          <thead>
+            <tr>
+              <th>Product ID</th>
+              <th>Available qty</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (r of rows(); track r.productId) {
+              <tr>
+                <td>
+                  <code>{{ r.productId }}</code>
+                </td>
+                <td>{{ r.availableQty }}</td>
+                <td class="inv-actions">
+                  <a mat-button [routerLink]="['/products', r.productId]">View</a>
+                  <a mat-button color="primary" [routerLink]="['/admin/edit-product', r.productId]">Edit</a>
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="3" class="inv-empty">No inventory rows yet. Run sync after products exist in the catalog.</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+
+    <section class="inv-delete-section">
+      <h3 class="inv-section-title">Delete product by ID</h3>
+      <p class="file-hint">Removes the product from Firestore (catalog). Reindex search if needed.</p>
+      <div class="inv-delete-row">
+        <mat-form-field appearance="outline" class="inv-delete-field">
+          <mat-label>Product ID</mat-label>
+          <input matInput name="deleteProductId" [(ngModel)]="deleteId" autocomplete="off" />
+        </mat-form-field>
+        <button
+          mat-stroked-button
+          color="warn"
+          type="button"
+          (click)="deleteProductById()"
+          [disabled]="!deleteId.trim() || deleting()"
+        >
+          @if (deleting()) {
+            Deleting…
+          } @else {
+            Delete product
+          }
+        </button>
+      </div>
+    </section>
+  </mat-card-content>
+</mat-card>
