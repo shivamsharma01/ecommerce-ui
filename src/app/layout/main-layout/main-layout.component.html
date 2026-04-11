@@ -4,7 +4,7 @@
     <span class="spacer"></span>
     <a mat-button routerLink="/catalog" routerLinkActive="active">Catalog</a>
     <a mat-button routerLink="/search" routerLinkActive="active">Search</a>
-    @if (auth.isAuthenticated()) {
+    @if (auth.isAuthenticated() && !auth.isPlatformAdmin()) {
       <a mat-button routerLink="/cart" routerLinkActive="active">Cart</a>
       <a mat-button routerLink="/orders" routerLinkActive="active">Orders</a>
     }
@@ -14,6 +14,10 @@
         Admin
       </button>
       <mat-menu #adminMenu="matMenu">
+        <a mat-menu-item routerLink="/admin/inventory">
+          <mat-icon>inventory_2</mat-icon>
+          Inventory
+        </a>
         <a mat-menu-item routerLink="/admin/add-product">
           <mat-icon>add_box</mat-icon>
           Add product

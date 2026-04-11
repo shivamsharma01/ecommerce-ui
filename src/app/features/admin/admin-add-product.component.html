@@ -2,23 +2,9 @@
   <mat-card-header>
     <mat-card-title>Add product</mat-card-title>
     <mat-card-subtitle
-      >Creates catalog + Firestore data; run reindex from the Admin menu so search picks it up.</mat-card-subtitle
+      >Creates catalog + Firestore data; run reindex from the Admin menu so search picks it up. Use Admin → Inventory to
+      sync stock rows.</mat-card-subtitle
     >
-    <div class="header-tools">
-      <button
-        mat-stroked-button
-        type="button"
-        color="accent"
-        (click)="syncInventoryFromCatalog()"
-        [disabled]="syncingInventory()"
-      >
-        @if (syncingInventory()) {
-          Syncing inventory…
-        } @else {
-          Sync inventory from catalog
-        }
-      </button>
-    </div>
   </mat-card-header>
   <mat-card-content>
     <form [formGroup]="form" (ngSubmit)="onSubmit()" class="form">

@@ -142,7 +142,7 @@ export class ProductDetailComponent {
   protected wishlist(): void {
     const p = this.product();
     if (!p) return;
-    this.snackBar.open(`“${p.name}” saved to wishlist (demo)`, 'Dismiss', {
+    this.snackBar.open(`“${p.name}” saved to wishlist`, 'Dismiss', {
       duration: 3000,
       horizontalPosition: 'center',
       verticalPosition: 'bottom',

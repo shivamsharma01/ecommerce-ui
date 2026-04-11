@@ -1,6 +1,6 @@
 import { Routes } from '@angular/router';
 import { MainLayoutComponent } from './layout/main-layout/main-layout.component';
-import { adminGuard, authGuard, publicGuard } from './core/auth';
+import { adminGuard, authGuard, consumerOnlyGuard, publicGuard } from './core/auth';
 
 export const routes: Routes = [
   {
@@ -42,19 +42,25 @@ export const routes: Routes = [
         path: 'cart',
         loadComponent: () =>
           import('./features/cart/cart.component').then((m) => m.CartComponent),
-        canActivate: [authGuard],
+        canActivate: [authGuard, consumerOnlyGuard],
       },
       {
         path: 'orders',
         loadComponent: () =>
           import('./features/orders/orders.component').then((m) => m.OrdersComponent),
-        canActivate: [authGuard],
+        canActivate: [authGuard, consumerOnlyGuard],
       },
       {
         path: 'orders/:orderId',
         loadComponent: () =>
           import('./features/orders/order-detail.component').then((m) => m.OrderDetailComponent),
-        canActivate: [authGuard],
+        canActivate: [authGuard, consumerOnlyGuard],
+      },
+      {
+        path: 'admin/inventory',
+        loadComponent: () =>
+          import('./features/admin/admin-inventory.component').then((m) => m.AdminInventoryComponent),
+        canActivate: [authGuard, adminGuard],
       },
       {
         path: 'admin/add-product',

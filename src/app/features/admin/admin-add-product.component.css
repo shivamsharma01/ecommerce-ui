@@ -140,3 +140,12 @@
   word-break: break-all;
   opacity: 0.85;
 }
+
+.danger-zone {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid color-mix(in srgb, var(--mat-sys-error, #b00020) 35%, transparent);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}

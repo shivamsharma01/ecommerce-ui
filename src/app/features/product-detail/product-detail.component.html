@@ -123,17 +123,19 @@
           </div>
 
           <div class="cta-row">
-            <button
-              mat-flat-button
-              color="primary"
-              class="btn-cart"
-              type="button"
-              [disabled]="p.inStock === false"
-              (click)="addToCart()"
-            >
-              <mat-icon>shopping_cart</mat-icon>
-              Add to cart
-            </button>
+            @if (!auth.isPlatformAdmin()) {
+              <button
+                mat-flat-button
+                color="primary"
+                class="btn-cart"
+                type="button"
+                [disabled]="p.inStock === false"
+                (click)="addToCart()"
+              >
+                <mat-icon>shopping_cart</mat-icon>
+                Add to cart
+              </button>
+            }
             <button
               mat-stroked-button
               class="btn-wish"

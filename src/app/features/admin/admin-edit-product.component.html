@@ -70,7 +70,7 @@
           <span class="file-title">Gallery (existing images)</span>
           <p class="file-hint">URLs are stored in Firestore. Remove a row to drop an image from this product.</p>
           @if (galleryRows().length === 0) {
-            <p class="error-banner">No images — add images only via “Add product” or restore data.</p>
+            <p class="error-banner">No images — upload new files below or restore data.</p>
           } @else {
             <ul class="gallery-edit-list">
               @for (g of galleryRows(); track $index) {
@@ -84,6 +84,45 @@
           }
         </div>
 
+        <div class="gallery-section">
+          <span class="file-title">Add more images</span>
+          <p class="file-hint">
+            Uploads to catalog storage and appends to this product (same as create flow). Up to 10 files per upload.
+          </p>
+          @if (appendError(); as ae) {
+            <p class="error-banner">{{ ae }}</p>
+          }
+          <div class="file-row">
+            <label class="file-label">
+              <span class="file-title">Image files</span>
+              <input type="file" accept="image/*" multiple (change)="onExtraGallerySelected($event)" />
+            </label>
+            @if (extraGalleryFiles().length > 0) {
+              <ul class="file-list">
+                @for (f of extraGalleryFiles(); track $index) {
+                  <li>
+                    <span>{{ f.name }}</span>
+                    <button type="button" class="linkish" (click)="removeExtraGalleryFile($index)">Remove</button>
+                  </li>
+                }
+              </ul>
+              <button
+                mat-stroked-button
+                type="button"
+                color="primary"
+                (click)="appendNewGalleryImages()"
+                [disabled]="appendingGallery()"
+              >
+                @if (appendingGallery()) {
+                  Uploading…
+                } @else {
+                  Upload and append images
+                }
+              </button>
+            }
+          </div>
+        </div>
+
         <div class="actions">
           <a mat-stroked-button routerLink="/catalog">Cancel</a>
           <button mat-flat-button color="primary" type="submit" [disabled]="submitting() || form.invalid">
@@ -91,6 +130,24 @@
               Saving…
             } @else {
               Save changes
+            }
+          </button>
+        </div>
+
+        <div class="danger-zone">
+          <span class="file-title">Delete product</span>
+          <p class="file-hint">Permanently removes this product from the catalog.</p>
+          <button
+            mat-stroked-button
+            color="warn"
+            type="button"
+            (click)="deleteThisProduct()"
+            [disabled]="deleting() || submitting()"
+          >
+            @if (deleting()) {
+              Deleting…
+            } @else {
+              Delete this product
             }
           </button>
         </div>

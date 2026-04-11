@@ -58,6 +58,15 @@ export class ProductService {
     return this.http.put<Product>(`/api/products/${productId}`, body);
   }
 
+  /** Multipart: JSON part {@code gallery} + {@code files} (filenames must match manifest, same as create upload). */
+  appendProductGallery(productId: string, formData: FormData): Observable<Product> {
+    return this.http.post<Product>(`/api/products/${productId}/gallery`, formData);
+  }
+
+  deleteProduct(productId: string): Observable<void> {
+    return this.http.delete<void>(`/api/products/${productId}`);
+  }
+
   /** Full OpenSearch reindex; requires JWT scope {@code reindex}. */
   reindexSearchIndex(): Observable<ReindexResponse> {
     return this.http.post<ReindexResponse>('/product-indexer/admin/reindex', {});

@@ -352,6 +352,7 @@
   min-width: 52px !important;
   padding: 0 !important;
   border-radius: 12px !important;
+  margin: auto;
 }
 
 .buy-divider {

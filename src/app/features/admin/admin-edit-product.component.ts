@@ -14,6 +14,8 @@ import { ProductService, type ProductUpdatePayload } from '../../core/services/p
 import { httpErrorMessage } from '../../core/http/http-error-message';
 import type { Product, ProductGalleryImage } from '../../shared/models/product.model';
 
+const MAX_EXTRA_GALLERY = 10;
+
 @Component({
   selector: 'app-admin-edit-product',
   standalone: true,
@@ -43,9 +45,14 @@ export class AdminEditProductComponent {
   protected readonly loadError = signal<string | null>(null);
   protected readonly submitting = signal(false);
   protected readonly saveError = signal<string | null>(null);
+  protected readonly appendingGallery = signal(false);
+  protected readonly appendError = signal<string | null>(null);
+  protected readonly deleting = signal(false);
 
   /** Gallery rows for PUT (existing URLs; can remove images, not upload new ones here). */
   protected readonly galleryRows = signal<ProductGalleryImage[]>([]);
+  /** New files to upload and append via POST /api/products/{id}/gallery. */
+  protected readonly extraGalleryFiles = signal<File[]>([]);
 
   protected readonly form = this.fb.nonNullable.group({
     name: ['', [Validators.required, Validators.maxLength(255)]],
@@ -107,6 +114,96 @@ export class AdminEditProductComponent {
 
   removeGalleryRow(index: number): void {
     this.galleryRows.update((rows) => rows.filter((_, i) => i !== index));
+  }
+
+  onExtraGallerySelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const picked = Array.from(input.files ?? []);
+    if (picked.length > MAX_EXTRA_GALLERY) {
+      this.snackBar.open(`Using first ${MAX_EXTRA_GALLERY} images (max per upload).`, 'OK', { duration: 4000 });
+      this.extraGalleryFiles.set(picked.slice(0, MAX_EXTRA_GALLERY));
+    } else {
+      this.extraGalleryFiles.set(picked);
+    }
+    input.value = '';
+  }
+
+  removeExtraGalleryFile(index: number): void {
+    this.extraGalleryFiles.update((files) => files.filter((_, i) => i !== index));
+  }
+
+  private partNameForIndex(file: File, index: number): string {
+    return `gallery-${index}-${file.name}`;
+  }
+
+  appendNewGalleryImages(): void {
+    const id = this.productId;
+    const files = this.extraGalleryFiles();
+    if (!id || files.length === 0 || this.appendingGallery()) return;
+    this.appendError.set(null);
+
+    const nameTrim = this.form.controls.name.value.trim() || 'Product';
+    const gallery = files.map((file, i) => {
+      const part = this.partNameForIndex(file, i);
+      return {
+        thumbFile: part,
+        hdFile: part,
+        alt: `${nameTrim} — ${this.galleryRows().length + i + 1}`,
+      };
+    });
+
+    const formData = new FormData();
+    formData.append('gallery', new Blob([JSON.stringify({ gallery })], { type: 'application/json' }));
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i]!;
+      formData.append('files', file, this.partNameForIndex(file, i));
+    }
+
+    this.appendingGallery.set(true);
+    this.productService
+      .appendProductGallery(id, formData)
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        finalize(() => this.appendingGallery.set(false)),
+      )
+      .subscribe({
+        next: (p: Product) => {
+          this.extraGalleryFiles.set([]);
+          this.galleryRows.set([...(p.gallery ?? [])]);
+          this.snackBar.open('Images uploaded and added to the product.', 'OK', { duration: 4000 });
+        },
+        error: (err: unknown) => {
+          this.appendError.set(httpErrorMessage(err, 'Could not upload images.'));
+        },
+      });
+  }
+
+  deleteThisProduct(): void {
+    const id = this.productId;
+    if (!id || this.deleting()) return;
+    if (
+      !confirm(
+        `Delete product ${id} from the catalog? This cannot be undone. Consider removing inventory rows for this ID separately.`,
+      )
+    ) {
+      return;
+    }
+    this.deleting.set(true);
+    this.productService
+      .deleteProduct(id)
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        finalize(() => this.deleting.set(false)),
+      )
+      .subscribe({
+        next: () => {
+          void this.router.navigate(['/catalog']);
+          this.snackBar.open('Product deleted.', 'OK', { duration: 4000 });
+        },
+        error: (err: unknown) => {
+          this.snackBar.open(httpErrorMessage(err, 'Could not delete product.'), 'Dismiss', { duration: 6000 });
+        },
+      });
   }
 
   onSubmit(): void {
