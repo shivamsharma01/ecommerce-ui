@@ -1,0 +1,22 @@
+<h2 mat-dialog-title>Your profile</h2>
+<mat-dialog-content class="dialog-body">
+  @if (loading) {
+  <div class="centered">
+    <mat-spinner diameter="36" />
+  </div>
+  } @else if (errorMessage) {
+  <p class="error">{{ errorMessage }}</p>
+  } @else if (profile) {
+  <dl class="profile-dl">
+    <dt>Name</dt>
+    <dd>{{ profile.firstName }} {{ profile.lastName }}</dd>
+    <dt>Email</dt>
+    <dd>{{ profile.email }}</dd>
+    <dt>User ID</dt>
+    <dd class="mono">{{ profile.userId }}</dd>
+  </dl>
+  }
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button mat-button mat-dialog-close type="button">Close</button>
+</mat-dialog-actions>

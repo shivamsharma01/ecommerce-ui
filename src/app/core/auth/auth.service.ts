@@ -52,7 +52,6 @@ export interface LoginResponse {
   expiresIn: number;
 }
 
-/** Mirrors auth service {@code PasswordSignupRequest} — these fields seed auth_identity / auth_user and the user_profile row (via signup event). */
 export interface SignupRequest {
   email: string;
   password: string;
@@ -119,10 +118,6 @@ export class AuthService {
       .pipe(tap((res) => this.setAccessToken(res.accessToken)));
   }
 
-  /**
-   * Ends the server session (best-effort) and clears the in-memory access token.
-   * Subscribe to run the request; token is cleared in `finalize` whether the call succeeds or not.
-   */
   logout(): Observable<void> {
     return this.http
       .post<void>('/auth/logout', {}, { withCredentials: true })
@@ -152,10 +147,6 @@ export class AuthService {
     return this.accessToken != null && this.accessToken.length > 0;
   }
 
-  /**
-   * Platform admins receive {@code product.admin} and {@code reindex} in the JWT scope claim
-   * (see auth service JwtTokenProvider).
-   */
   isPlatformAdmin(): boolean {
     const token = this.accessToken;
     if (!token) return false;

@@ -9,7 +9,6 @@ import type {
   SearchResponse,
 } from '../../shared/models/product.model';
 
-/** Matches product service {@code ProductRequest} for PUT /api/products/{id}. */
 export interface ProductUpdatePayload {
   name: string;
   description: string;

@@ -2,7 +2,6 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
-/** Matches user service {@code UserResponse}. */
 export interface UserProfile {
   userId: string;
   email: string;

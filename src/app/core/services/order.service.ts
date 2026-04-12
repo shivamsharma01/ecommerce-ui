@@ -7,7 +7,6 @@ export interface OrderItem {
   quantity: number;
   unitPrice: number;
   lineTotal: number;
-  /** From product service when available */
   productName?: string | null;
   thumbnailUrl?: string | null;
 }
