@@ -1,0 +1,121 @@
+<h2 mat-dialog-title>Your addresses</h2>
+
+<mat-dialog-content class="dialog-body">
+  @if (loading) {
+    <div class="centered">
+      <mat-spinner diameter="36" />
+    </div>
+  } @else if (errorMessage) {
+    <p class="error">{{ errorMessage }}</p>
+    <button mat-stroked-button type="button" (click)="refresh()">Retry</button>
+  } @else {
+    @if (addresses.length === 0) {
+      <mat-card appearance="outlined" class="empty-card">
+        <mat-card-content>
+          <p>No addresses yet. Add one to use during checkout.</p>
+        </mat-card-content>
+      </mat-card>
+    } @else {
+      <div class="addr-list">
+        @for (a of addresses; track a.addressId) {
+          <mat-card appearance="outlined" class="addr">
+            <mat-card-content class="addr-inner">
+              <div class="addr-main">
+                <div class="addr-title">
+                  <strong>{{ a.fullName }}</strong>
+                  @if (a.isDefault) {
+                    <span class="pill">Default</span>
+                  }
+                </div>
+                <div class="addr-lines">{{ formatOneLine(a) }}</div>
+                <div class="addr-phone">{{ a.phone }}</div>
+              </div>
+              <div class="addr-actions">
+                <button mat-stroked-button type="button" (click)="makeDefault(a)" [disabled]="a.isDefault">
+                  Make default
+                </button>
+              </div>
+            </mat-card-content>
+          </mat-card>
+        }
+      </div>
+    }
+
+    <div class="add-row">
+      <button mat-flat-button color="primary" type="button" (click)="toggleAdd()">
+        @if (showAddForm) {
+          Hide form
+        } @else {
+          Add address
+        }
+      </button>
+    </div>
+
+    @if (showAddForm) {
+      <mat-card appearance="outlined" class="form-card">
+        <mat-card-content>
+          <form class="form" (ngSubmit)="save()" [formGroup]="form">
+            <div class="grid">
+              <mat-form-field appearance="outline">
+                <mat-label>Full name</mat-label>
+                <input matInput formControlName="fullName" />
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>Phone</mat-label>
+                <input matInput formControlName="phone" />
+              </mat-form-field>
+            </div>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Address line 1</mat-label>
+              <input matInput formControlName="line1" />
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Address line 2 (optional)</mat-label>
+              <input matInput formControlName="line2" />
+            </mat-form-field>
+
+            <div class="grid">
+              <mat-form-field appearance="outline">
+                <mat-label>City</mat-label>
+                <input matInput formControlName="city" />
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>State</mat-label>
+                <input matInput formControlName="state" />
+              </mat-form-field>
+            </div>
+
+            <div class="grid">
+              <mat-form-field appearance="outline">
+                <mat-label>Pincode</mat-label>
+                <input matInput formControlName="pincode" />
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>Country</mat-label>
+                <input matInput formControlName="country" />
+              </mat-form-field>
+            </div>
+
+            <mat-checkbox formControlName="makeDefault">Make this my default address</mat-checkbox>
+
+            <div class="form-actions">
+              <button mat-flat-button color="primary" type="submit" [disabled]="saving">
+                @if (saving) {
+                  Saving…
+                } @else {
+                  Save address
+                }
+              </button>
+            </div>
+          </form>
+        </mat-card-content>
+      </mat-card>
+    }
+  }
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button mat-dialog-close type="button">Close</button>
+</mat-dialog-actions>
+

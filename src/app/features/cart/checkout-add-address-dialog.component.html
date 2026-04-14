@@ -1,0 +1,61 @@
+<h2 mat-dialog-title>Add delivery address</h2>
+
+<mat-dialog-content class="dialog-body">
+  <form class="form" (ngSubmit)="save()" [formGroup]="form">
+    <div class="grid">
+      <mat-form-field appearance="outline">
+        <mat-label>Full name</mat-label>
+        <input matInput formControlName="fullName" />
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>Phone</mat-label>
+        <input matInput formControlName="phone" />
+      </mat-form-field>
+    </div>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Address line 1</mat-label>
+      <input matInput formControlName="line1" />
+    </mat-form-field>
+    <mat-form-field appearance="outline">
+      <mat-label>Address line 2 (optional)</mat-label>
+      <input matInput formControlName="line2" />
+    </mat-form-field>
+
+    <div class="grid">
+      <mat-form-field appearance="outline">
+        <mat-label>City</mat-label>
+        <input matInput formControlName="city" />
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>State</mat-label>
+        <input matInput formControlName="state" />
+      </mat-form-field>
+    </div>
+
+    <div class="grid">
+      <mat-form-field appearance="outline">
+        <mat-label>Pincode</mat-label>
+        <input matInput formControlName="pincode" />
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>Country</mat-label>
+        <input matInput formControlName="country" />
+      </mat-form-field>
+    </div>
+
+    <mat-checkbox formControlName="makeDefault">Make this my default address</mat-checkbox>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button mat-dialog-close type="button" [disabled]="saving">Cancel</button>
+  <button mat-flat-button color="primary" type="button" (click)="save()" [disabled]="saving">
+    @if (saving) {
+      Saving…
+    } @else {
+      Save
+    }
+  </button>
+</mat-dialog-actions>
+

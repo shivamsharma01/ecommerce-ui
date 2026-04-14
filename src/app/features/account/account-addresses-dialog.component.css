@@ -1,0 +1,73 @@
+.dialog-body {
+  display: block;
+}
+
+.centered {
+  display: grid;
+  place-items: center;
+  padding: 18px 0;
+}
+
+.error {
+  color: #b00020;
+}
+
+.addr-list {
+  display: grid;
+  gap: 10px;
+}
+
+.addr-inner {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.addr-title {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.pill {
+  font-size: 12px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+}
+
+.addr-lines,
+.addr-phone {
+  color: rgba(0, 0, 0, 0.75);
+  margin-top: 2px;
+}
+
+.add-row {
+  margin-top: 14px;
+  display: flex;
+  justify-content: flex-start;
+}
+
+.form-card {
+  margin-top: 12px;
+}
+
+.grid {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 720px) {
+  .grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.form-actions {
+  margin-top: 12px;
+  display: flex;
+  justify-content: flex-end;
+}
+
