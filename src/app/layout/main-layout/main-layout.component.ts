@@ -10,6 +10,7 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { AuthService } from '../../core/auth';
 import { ProductService } from '../../core/services/product.service';
 import { AccountProfileDialogComponent } from '../../features/account/account-profile-dialog.component';
+import { AccountAddressesDialogComponent } from '../../features/account/account-addresses-dialog.component';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
@@ -40,6 +41,13 @@ export class MainLayoutComponent {
   openAccountProfile(): void {
     this.dialog.open(AccountProfileDialogComponent, {
       width: 'min(100vw - 48px, 420px)',
+      autoFocus: 'dialog',
+    });
+  }
+
+  openAddresses(): void {
+    this.dialog.open(AccountAddressesDialogComponent, {
+      width: 'min(100vw - 48px, 720px)',
       autoFocus: 'dialog',
     });
   }

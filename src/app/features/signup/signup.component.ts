@@ -13,6 +13,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { AuthService } from '../../core/auth';
 import { httpErrorMessage } from '../../core/http/http-error-message';
 
@@ -33,6 +34,7 @@ function passwordsMatch(group: AbstractControl): ValidationErrors | null {
     MatFormFieldModule,
     MatInputModule,
     MatButtonModule,
+    MatSnackBarModule,
   ],
   templateUrl: './signup.component.html',
   styleUrl: './signup.component.css',
@@ -43,6 +45,7 @@ export class SignupComponent {
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly snackBar = inject(MatSnackBar);
 
   protected errorMessage = '';
   protected successMessage = '';
@@ -88,7 +91,13 @@ export class SignupComponent {
   }
 
   onSubmit(): void {
-    if (this.form.invalid || this.isLoading) return;
+    if (this.isLoading) return;
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      this.errorMessage = 'Please fix the errors and try again.';
+      this.cdr.markForCheck();
+      return;
+    }
 
     this.errorMessage = '';
     this.successMessage = '';
@@ -118,6 +127,11 @@ export class SignupComponent {
           this.successMessage =
             res.message ??
             'Account created. Check your email to verify, then you can sign in.';
+          this.snackBar.open(`Verification email sent to ${this.submittedEmail}.`, 'OK', {
+            duration: 4500,
+            horizontalPosition: 'center',
+            verticalPosition: 'bottom',
+          });
         },
         error: (err) => {
           const e = err?.error;
@@ -130,6 +144,7 @@ export class SignupComponent {
           } else {
             this.errorMessage = 'Signup failed. Please try again.';
           }
+          this.snackBar.open(this.errorMessage, 'Dismiss', { duration: 6000 });
         },
       });
   }

@@ -39,6 +39,14 @@
               <span>Total</span>
               <strong>{{ o.totalAmount / 100 | currency: 'INR' : 'symbol' : '1.0-0' }}</strong>
             </div>
+            @if (o.shippingAddress; as a) {
+              <div class="addr-inline">
+                <span class="addr-label">Delivering to:</span>
+                <span class="addr-value">
+                  {{ a.fullName }}, {{ a.line1 }}, {{ a.city }}, {{ a.state }} {{ a.pincode }}
+                </span>
+              </div>
+            }
             <ul class="items">
               @for (it of o.items; track it.productId) {
                 <li class="line-item">
@@ -51,7 +59,6 @@
                   }
                   <div class="line-main">
                     <span class="line-name">{{ it.productName || 'Product' }}</span>
-                    <span class="line-pid">{{ it.productId }}</span>
                   </div>
                   <span class="qty">×{{ it.quantity }}</span>
                   <span class="line">

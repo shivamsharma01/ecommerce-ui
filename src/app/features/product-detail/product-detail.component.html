@@ -124,17 +124,41 @@
 
           <div class="cta-row">
             @if (!auth.isPlatformAdmin()) {
-              <button
-                mat-flat-button
-                color="primary"
-                class="btn-cart"
-                type="button"
-                [disabled]="p.inStock === false"
-                (click)="addToCart()"
-              >
-                <mat-icon>shopping_cart</mat-icon>
-                Add to cart
-              </button>
+              @if (cartQty() === 0) {
+                <button
+                  mat-flat-button
+                  color="primary"
+                  class="btn-cart"
+                  type="button"
+                  [disabled]="p.inStock === false"
+                  (click)="addToCart()"
+                >
+                  <mat-icon>shopping_cart</mat-icon>
+                  Add to cart
+                </button>
+              } @else {
+                <div class="qty-stepper" role="group" aria-label="Cart quantity">
+                  <button
+                    mat-stroked-button
+                    type="button"
+                    class="qty-btn"
+                    (click)="decrementCart()"
+                    aria-label="Decrease quantity"
+                  >
+                    <mat-icon>remove</mat-icon>
+                  </button>
+                  <div class="qty-value" aria-live="polite">{{ cartQty() }}</div>
+                  <button
+                    mat-stroked-button
+                    type="button"
+                    class="qty-btn"
+                    (click)="incrementCart()"
+                    aria-label="Increase quantity"
+                  >
+                    <mat-icon>add</mat-icon>
+                  </button>
+                </div>
+              }
             }
             <button
               mat-stroked-button
@@ -143,7 +167,9 @@
               (click)="wishlist()"
               matTooltip="Save for later"
             >
-              <mat-icon>favorite_border</mat-icon>
+              <mat-icon class="wish-icon" [class.wish-active]="wishlistActive()">
+                {{ wishlistActive() ? 'favorite' : 'favorite_border' }}
+              </mat-icon>
             </button>
           </div>
 

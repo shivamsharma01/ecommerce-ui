@@ -1,4 +1,4 @@
-import { Component, DestroyRef, inject, signal } from '@angular/core';
+import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -34,7 +34,7 @@ import type {
   templateUrl: './search.component.html',
   styleUrl: './search.component.css',
 })
-export class SearchComponent {
+export class SearchComponent implements OnInit {
   private readonly productService = inject(ProductService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly search$ = new Subject<void>();
@@ -83,6 +83,11 @@ export class SearchComponent {
         this.totalPages.set(response.totalPages);
         this.page.set(response.page);
       });
+  }
+
+  ngOnInit(): void {
+    // Default results: search with no filters.
+    this.onSearch(true);
   }
 
   onSearch(resetPage = true): void {

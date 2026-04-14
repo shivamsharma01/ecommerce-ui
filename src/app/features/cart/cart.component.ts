@@ -3,16 +3,20 @@ import { Component, DestroyRef, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
+import { HttpErrorResponse } from '@angular/common/http';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { CartService, type CartResponse } from '../../core/services/cart.service';
 import { OrderService } from '../../core/services/order.service';
 import { ProductService } from '../../core/services/product.service';
+import { UserService } from '../../core/services/user.service';
 import { httpErrorMessage } from '../../core/http/http-error-message';
 import type { Product } from '../../shared/models/product.model';
+import { CheckoutAddAddressDialogComponent } from './checkout-add-address-dialog.component';
 
 type CartRow = {
   productId: string;
@@ -31,6 +35,7 @@ type CartRow = {
     MatIconModule,
     MatProgressSpinnerModule,
     MatSnackBarModule,
+    MatDialogModule,
   ],
   templateUrl: './cart.component.html',
   styleUrl: './cart.component.css',
@@ -39,9 +44,11 @@ export class CartComponent {
   private readonly cartService = inject(CartService);
   private readonly orderService = inject(OrderService);
   private readonly productService = inject(ProductService);
+  private readonly userService = inject(UserService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly router = inject(Router);
   private readonly snackBar = inject(MatSnackBar);
+  private readonly dialog = inject(MatDialog);
 
   protected readonly loading = signal(true);
   protected readonly error = signal<string | null>(null);
@@ -132,8 +139,33 @@ export class CartComponent {
   protected checkout(): void {
     if (this.checkingOut()) return;
     this.checkingOut.set(true);
+
+    this.userService
+      .listAddresses()
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        finalize(() => this.checkingOut.set(false)),
+      )
+      .subscribe({
+        next: (list) => {
+          const hasAny = (list ?? []).length > 0;
+          if (!hasAny) {
+            this.promptForAddressAndCheckout();
+            return;
+          }
+          this.doCheckout();
+        },
+        error: () => {
+          // If address fetch fails, still attempt checkout; backend will enforce ADDRESS_REQUIRED.
+          this.doCheckout();
+        },
+      });
+  }
+
+  private doCheckout(addressId?: string): void {
+    this.checkingOut.set(true);
     this.orderService
-      .checkout()
+      .checkout(addressId ? { addressId } : {})
       .pipe(
         takeUntilDestroyed(this.destroyRef),
         finalize(() => this.checkingOut.set(false)),
@@ -145,8 +177,29 @@ export class CartComponent {
           });
         },
         error: (err: unknown) => {
+          if (err instanceof HttpErrorResponse && err.status === 409) {
+            const code = (err.error as { code?: unknown } | null)?.code;
+            if (code === 'ADDRESS_REQUIRED') {
+              this.promptForAddressAndCheckout();
+              return;
+            }
+          }
           this.error.set(httpErrorMessage(err, 'Checkout failed.'));
         },
+      });
+  }
+
+  private promptForAddressAndCheckout(): void {
+    const ref = this.dialog.open(CheckoutAddAddressDialogComponent, {
+      width: 'min(100vw - 48px, 720px)',
+      autoFocus: 'dialog',
+    });
+    ref
+      .afterClosed()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((created) => {
+        if (!created?.addressId) return;
+        this.doCheckout(created.addressId);
       });
   }
 }

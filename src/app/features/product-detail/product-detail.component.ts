@@ -64,6 +64,8 @@ export class ProductDetailComponent {
   protected readonly error = signal<string | null>(null);
   protected readonly activeIndex = signal(0);
   protected readonly zoomOpen = signal(false);
+  protected readonly cartQty = signal(0);
+  protected readonly wishlistActive = signal(false);
 
   protected readonly gallery = computed<ProductGalleryImage[]>(() => {
     const product = this.product();
@@ -114,8 +116,11 @@ export class ProductDetailComponent {
             return;
           }
           this.product.set(product);
+          this.cartQty.set(0);
+          this.wishlistActive.set(false);
           this.preloadNeighbors();
           this.applyShareMeta(product);
+          this.syncCartQty(product.id);
         },
         error: () => {
           this.product.set(null);
@@ -142,14 +147,70 @@ export class ProductDetailComponent {
       .upsertItem(p.id, 1)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: () =>
+        next: () => {
+          this.cartQty.set(1);
           this.snackBar.open(`Added “${p.name}” to cart.`, 'OK', {
             duration: 3500,
             horizontalPosition: 'center',
             verticalPosition: 'bottom',
-          }),
+          });
+        },
         error: (err: unknown) =>
           this.snackBar.open(httpErrorMessage(err, 'Could not add to cart.'), 'Dismiss', {
+            duration: 6000,
+          }),
+      });
+  }
+
+  protected incrementCart(): void {
+    const p = this.product();
+    if (!p) return;
+    if (!this.auth.isAuthenticated()) {
+      this.snackBar.open('Sign in to add items to your cart.', 'OK', { duration: 4000 });
+      return;
+    }
+    const nextQty = this.cartQty() + 1;
+    this.cartService
+      .upsertItem(p.id, nextQty)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => this.cartQty.set(nextQty),
+        error: (err: unknown) =>
+          this.snackBar.open(httpErrorMessage(err, 'Could not update cart.'), 'Dismiss', {
+            duration: 6000,
+          }),
+      });
+  }
+
+  protected decrementCart(): void {
+    const p = this.product();
+    if (!p) return;
+    if (!this.auth.isAuthenticated()) {
+      this.snackBar.open('Sign in to manage your cart.', 'OK', { duration: 4000 });
+      return;
+    }
+    const current = this.cartQty();
+    if (current <= 1) {
+      this.cartService
+        .removeItem(p.id)
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe({
+          next: () => this.cartQty.set(0),
+          error: (err: unknown) =>
+            this.snackBar.open(httpErrorMessage(err, 'Could not update cart.'), 'Dismiss', {
+              duration: 6000,
+            }),
+        });
+      return;
+    }
+    const nextQty = current - 1;
+    this.cartService
+      .upsertItem(p.id, nextQty)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => this.cartQty.set(nextQty),
+        error: (err: unknown) =>
+          this.snackBar.open(httpErrorMessage(err, 'Could not update cart.'), 'Dismiss', {
             duration: 6000,
           }),
       });
@@ -158,6 +219,7 @@ export class ProductDetailComponent {
   protected wishlist(): void {
     const p = this.product();
     if (!p) return;
+    this.wishlistActive.set(true);
     this.snackBar.open(`“${p.name}” saved to wishlist`, 'Dismiss', {
       duration: 3000,
       horizontalPosition: 'center',
@@ -213,6 +275,20 @@ export class ProductDetailComponent {
       const img = new Image();
       img.src = src;
     }
+  }
+
+  private syncCartQty(productId: string): void {
+    if (!this.auth.isAuthenticated()) return;
+    this.cartService
+      .getCart()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (cart) => {
+          const item = (cart.items ?? []).find((i) => i.productId === productId);
+          this.cartQty.set(item?.quantity ?? 0);
+        },
+        error: () => void 0,
+      });
   }
 
   private applyShareMeta(product: Product): void {

@@ -348,11 +348,50 @@
   margin-right: 0.35rem;
 }
 
+.qty-stepper {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 52px 1fr 52px;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.qty-btn {
+  min-width: 52px !important;
+  height: 52px !important;
+  padding: 0 !important;
+  border-radius: 12px !important;
+  display: grid !important;
+  place-items: center !important;
+}
+
+.qty-value {
+  height: 52px;
+  border-radius: 12px;
+  border: 1px solid var(--mat-sys-outline-variant, #e2e8f0);
+  background: var(--mat-sys-surface, #fff);
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--mat-sys-on-surface, #0f172a);
+}
+
 .btn-wish {
   min-width: 52px !important;
   padding: 0 !important;
   border-radius: 12px !important;
   margin: auto;
+  display: grid !important;
+  place-items: center !important;
+}
+
+.wish-icon {
+  display: block;
+}
+
+.wish-icon.wish-active {
+  color: #e11d48; /* rose-600 */
 }
 
 .buy-divider {
